@@ -70,7 +70,11 @@ export function generateAudience() {
       sl: 50,
       st: 112,
       scale: s.scale,
-      tone: 0.72 + s.row * 0.06, // nearer rows read a touch stronger
+      tone: 0.78 + s.row * 0.05, // nearer rows read a touch stronger
+      // individuality: hair weighted toward plain, plus skin + clothing variants
+      hair: [0, 0, 1, 2, 3, 0, 4, 1, 2, 0][i % 10],
+      skin: (i * 3) % 4,
+      cloth: (i * 5) % 5,
       delay,
       bubbleDelay: delay + 1.5, // bubble pops after they have settled
     };

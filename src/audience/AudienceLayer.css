@@ -37,6 +37,16 @@
   display: block;
 }
 
+/* subtle walk-bob while arriving, then settles */
+.fig-wrap {
+  animation: walk-bob 0.34s ease-in-out var(--d) 4;
+}
+
+@keyframes walk-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
 /* Figure parts. */
 .fig-shadow { fill: #000; opacity: 0.35; }
 .fig-body { fill: var(--ink-lift); stroke: var(--bone-dim); stroke-width: 1.2; }

@@ -34,7 +34,10 @@ const Figures = memo(function Figures({ people }) {
               {p.expectation}
             </div>
           )}
-          <Figure tone={p.tone} />
+          {/* wrapper carries the walk-bob during the entrance */}
+          <div className="fig-wrap" style={{ '--d': `${p.delay}s` }}>
+            <Figure tone={p.tone} skin={p.skin} hair={p.hair} cloth={p.cloth} />
+          </div>
         </div>
       ))}
     </>
