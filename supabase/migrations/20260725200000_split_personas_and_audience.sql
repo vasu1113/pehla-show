@@ -1,6 +1,6 @@
 create table if not exists public.audience (
   id uuid primary key default gen_random_uuid(),
-  persona_id text not null unique references public.personas(id) on delete cascade,
+  persona_id text not null unique references public.personas(id),
   start_patience double precision not null,
   seat_count integer not null default 5,
   sensitivity jsonb not null,
