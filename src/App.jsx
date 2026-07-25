@@ -1,33 +1,70 @@
-import { useState } from 'react';
-import Theatre from './Theatre';
+import { useState, useMemo } from 'react';
+import { FilmStrip } from './film/FilmStrip';
+import { ScriptPane } from './components/ScriptPane';
+import { AudienceLayer } from './audience/AudienceLayer';
+import { CriticBoxes } from './critics/CriticsBalcony';
+import { FILM_CHUNKS, buildTimeline, chunkAtTime } from './film/filmData';
+import { PlaybackBar } from './components/PlaybackBar';
+import { useClock } from './clock/useClock';
+import { formatTime } from './clock/format';
+import './App.css';
 
 export default function App() {
-  const [showIndex, setShowIndex] = useState(false);
+  // Bumping this remounts the audience layer, replaying the arrivals.
+  const [arrivalKey, setArrivalKey] = useState(0);
+  const { currentSeconds, duration, speed, isPlaying } = useClock();
+
+  const { timed } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
+  const { index, chunk } = chunkAtTime(timed, currentSeconds);
 
   return (
-    <div className="stage">
-      <div className="stage-inner">
-        <Theatre showIndex={showIndex} />
-        <div className="caption">
-          <span>Pehla Show / step 1 / 30 seats</span>
-          <button
-            onClick={() => setShowIndex(v => !v)}
-            style={{
-              background: 'none',
-              border: '1px solid var(--bone-faint)',
-              color: 'var(--bone-faint)',
-              font: 'inherit',
-              fontSize: 11,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              padding: '4px 10px',
-              cursor: 'pointer',
-            }}
-          >
-            {showIndex ? 'hide' : 'show'} seat numbers
-          </button>
+    <div className="show">
+      <header className="show-header">
+        <span className="sh-title">PEHLA SHOW</span>
+        <span className="sh-sub">the screen · track b</span>
+      </header>
+
+      <div className="show-body">
+        {/* Left column — the script (B3), about a third. */}
+        <ScriptPane />
+
+        {/* Right column — the cinema: screen (B5) on top, audience below. */}
+        <div className="show-right">
+          <div className="screen-wrap">
+            <FilmStrip />
+          </div>
+
+          {/* The house — an opera-house horseshoe: the clueless crowd in the
+              centre stalls, critics in boxes climbing the side walls (the live
+              A/B). NX1/NX2 audience is a Track-B prototype; Track A's Theatre.jsx
+              stays untouched (reconcile at B8). */}
+          <div className="house">
+            <CriticBoxes side="left" />
+            <AudienceLayer key={arrivalKey} />
+            <CriticBoxes side="right" />
+          </div>
+
+          <div className="caption">
+            <span>the screen + 30 listeners</span>
+            <button className="ghost-btn" onClick={() => setArrivalKey((k) => k + 1)}>
+              replay arrivals
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* An independent reader of THE CLOCK, reading the SAME timeline the
+          screen and script do — a live cross-check that nothing drifts. */}
+      <div className="clock-readout">
+        <span className="cr-item">CLOCK <b>{currentSeconds.toFixed(2)}s</b></span>
+        <span className="cr-item">{formatTime(currentSeconds)} / {formatTime(duration)}</span>
+        <span className="cr-item">
+          CHUNK <b>{chunk ? `${String(index + 1).padStart(2, '0')} · ${chunk.type}` : '—'}</b>
+        </span>
+        <span className="cr-item">{isPlaying ? 'PLAYING' : 'PAUSED'} · {speed}&times;</span>
+      </div>
+
+      <PlaybackBar />
     </div>
   );
 }
