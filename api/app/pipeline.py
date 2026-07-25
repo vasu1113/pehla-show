@@ -468,6 +468,39 @@ async def apply_recommended_fix(
         )
 
     cohorts, summary = _summary(audience, drops, kept)
+
+    # A cut removes a beat, and the notes inherited from the parent may be
+    # anchored to it. The contract is explicit that a note without a valid
+    # beat_id must not be emitted - A6 enforces that on the way in, and the
+    # fix path has to hold the same line on the way through, or Track B ends
+    # up rendering a note pointing at a beat that no longer exists.
+    live_beat_ids = {beat.id for beat in beats}
+    notes = [note for note in run.notes if note.beat_id in live_beat_ids]
+    orphaned = len(run.notes) - len(notes)
+    if orphaned:
+        warnings = [
+            *warnings,
+            models.Warning(
+                code="NOTES_DROPPED",
+                message=(
+                    f"{orphaned} note(s) referred to a chunk the fix removed."
+                ),
+            ),
+        ]
+
+    synthesis = run.room_synthesis
+    if synthesis is not None:
+        synthesis = synthesis.model_copy(
+            update={
+                "consensus": [
+                    c for c in synthesis.consensus if c.beat_id in live_beat_ids
+                ],
+                "conflict": [
+                    c for c in synthesis.conflict if c.beat_id in live_beat_ids
+                ],
+            }
+        )
+
     ready = run.model_copy(
         deep=True,
         update={
@@ -475,6 +508,8 @@ async def apply_recommended_fix(
             "cohorts": cohorts,
             "audience": audience,
             "drop_events": drops,
+            "notes": notes,
+            "room_synthesis": synthesis,
             "summary": summary,
             "warnings": warnings,
         },
