@@ -31,7 +31,12 @@ create table public.beat_cache (
 create table public.personas (
   id text primary key,
   label text not null,
-  context text,
+  context text not null
+);
+
+create table public.audience (
+  id uuid primary key default gen_random_uuid(),
+  persona_id text not null unique references public.personas(id) on delete cascade,
   start_patience double precision not null,
   seat_count integer not null default 5,
   sensitivity jsonb not null,
