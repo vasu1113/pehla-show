@@ -1,5 +1,5 @@
 create table public.scripts (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
   title text,
   raw_text text not null,
   content_hash text not null unique,
@@ -9,8 +9,8 @@ create table public.scripts (
 );
 
 create table public.runs (
-  id text primary key check (id ~ '^run_[0-9a-f]{6}$'),
-  script_id uuid not null references public.scripts(id) on delete cascade,
+  id text primary key check (id ~ '^run_[0-9a-z_]+$'),
+  script_id text not null references public.scripts(id) on delete cascade,
   parent_run_id text references public.runs(id) on delete set null,
   variant text not null default 'original' check (variant in ('original', 'fixed')),
   status text not null default 'analysing' check (status in ('analysing', 'ready', 'error')),
@@ -41,7 +41,7 @@ create table public.personas (
 
 create table public.film_frames (
   id uuid primary key default gen_random_uuid(),
-  script_id uuid not null references public.scripts(id) on delete cascade,
+  script_id text not null references public.scripts(id) on delete cascade,
   beat_id integer not null,
   storage_path text not null,
   prompt text,
