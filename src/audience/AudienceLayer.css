@@ -88,6 +88,44 @@
   100% { opacity: 0; transform: translate(-50%, -4px) scale(1); }
 }
 
+/* NX2 — live thoughts during the film. Positioned at a seat like the figures;
+   opacity is set inline from the clock (no CSS animation, so it is scrub-exact). */
+.thought-slot {
+  position: absolute;
+  pointer-events: none;
+}
+
+.thought-bubble {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 150px;
+  width: max-content;
+  padding: 5px 9px;
+  background: var(--bone);
+  color: var(--ink);
+  border-radius: 10px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  text-align: center;
+  white-space: normal;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* soft tail pointing down at the figure */
+.thought-bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--bone);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .seat-slot { animation: none; }
   .expectation-bubble { animation: none; opacity: 0; } /* no flashing bubbles */
