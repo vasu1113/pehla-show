@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { FilmStrip } from './film/FilmStrip';
 import { ScriptPane } from './components/ScriptPane';
 import { AudienceLayer } from './audience/AudienceLayer';
-import { CriticsBalcony } from './critics/CriticsBalcony';
+import { CriticBoxes } from './critics/CriticsBalcony';
 import { FILM_CHUNKS, buildTimeline, chunkAtTime } from './film/filmData';
 import { PlaybackBar } from './components/PlaybackBar';
 import { useClock } from './clock/useClock';
@@ -34,12 +34,14 @@ export default function App() {
             <FilmStrip />
           </div>
 
-          {/* The house: critics up in the balcony (still, analytical), the
-              clueless crowd below — the live A/B. NX1/NX2 audience is a Track-B
-              prototype; Track A's Theatre.jsx stays untouched (reconcile at B8). */}
+          {/* The house — an opera-house horseshoe: the clueless crowd in the
+              centre stalls, critics in boxes climbing the side walls (the live
+              A/B). NX1/NX2 audience is a Track-B prototype; Track A's Theatre.jsx
+              stays untouched (reconcile at B8). */}
           <div className="house">
-            <CriticsBalcony />
+            <CriticBoxes side="left" />
             <AudienceLayer key={arrivalKey} />
+            <CriticBoxes side="right" />
           </div>
 
           <div className="caption">

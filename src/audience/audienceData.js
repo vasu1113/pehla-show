@@ -61,9 +61,9 @@ export function generateAudience() {
       row: s.row,
       type: LISTENER_TYPES[i % LISTENER_TYPES.length],
       expectation: EXPECTATIONS[(i * 3) % EXPECTATIONS.length],
-      // Only some people voice a thought on the way in — a crowd murmurs, it
-      // does not all talk at once. ~8 of 30, spread across the rows.
-      showsBubble: i % 4 === 1,
+      // Only a few voice a thought on the way in — kept sparse for readability.
+      // ~4 of 30, spread across the rows.
+      showsBubble: i % 7 === 2,
       // final seat (fl/ft) and where they walk in from (sl/st), in %.
       fl: s.left,
       ft: s.top,

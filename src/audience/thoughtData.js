@@ -34,21 +34,23 @@ export function buildThoughtSchedule(timed, peopleCount) {
   let uid = 0;
   timed.forEach((c, ci) => {
     const prev = ci > 0 ? timed[ci - 1] : null;
-    const pool = poolForChunk(c, prev);
 
-    // One or two "beats" per chunk; at each beat a small cluster of people
-    // react close together, then the room goes quiet again.
-    const beats = c.duration > 36 ? 2 : 1;
-    for (let m = 0; m < beats; m++) {
-      const clusterSize = 2 + ((ci + m) % 2); // 2 or 3 together
-      const base = c.start + (c.duration * (m + 1)) / (beats + 1);
-      for (let k = 0; k < clusterSize; k++) {
-        const personId = (ci * 7 + m * 13 + k * 11) % peopleCount;
-        const text = pool[(ci * 3 + m * 2 + k) % pool.length];
-        const start = base + k * 0.5; // slight stagger within the cluster
-        const end = Math.min(c.end - 0.2, start + 3.4);
-        if (end > start + 0.8) events.push({ id: uid++, personId, text, start, end });
-      }
+    // The crowd only reacts on NOTABLE beats — a clear emotional signal:
+    // high tension, boredom, or a big swing from the previous chunk. Most
+    // chunks pass in silence, so the room stays readable.
+    const swing = prev ? Math.abs(c.tension - prev.tension) : 0;
+    const notable = c.tension >= 0.72 || c.tension <= 0.3 || swing >= 0.2;
+    if (!notable) return;
+
+    const pool = poolForChunk(c, prev);
+    const clusterSize = 1 + (ci % 2); // 1 or 2 people, never a crowd
+    const base = c.start + c.duration * 0.4;
+    for (let k = 0; k < clusterSize; k++) {
+      const personId = (ci * 7 + k * 11) % peopleCount;
+      const text = pool[(ci * 3 + k) % pool.length];
+      const start = base + k * 0.5;
+      const end = Math.min(c.end - 0.1, start + 2.4);
+      if (end > start + 0.6) events.push({ id: uid++, personId, text, start, end });
     }
   });
   return events;

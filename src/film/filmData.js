@@ -56,13 +56,20 @@ export const FILM_CHUNKS = [
     script: 'EXT. PLATFORM — NIGHT. The last local, finally, sighs to a stop. The doors stand open in front of her. Meena looks at the lit carriage a long moment, and does not get on. She turns back toward the lane. FADE OUT.' },
 ];
 
-/** Cumulative start time of each chunk, plus the film's total length. */
+// Compresses the whole film (and everything that reads off it) to a concise,
+// demo-friendly length. Raw durations sum to 540s; at 0.2 the film runs ~108s.
+export const TIME_SCALE = 0.2;
+
+/** Cumulative start time of each chunk, plus the film's total length.
+ *  Durations are scaled here, so chunks, thoughts and critic notes all
+ *  compress together — the single knob for demo length. */
 export function buildTimeline(chunks) {
   let acc = 0;
   const timed = chunks.map((c) => {
+    const duration = c.duration * TIME_SCALE;
     const start = acc;
-    acc += c.duration;
-    return { ...c, start, end: acc };
+    acc += duration;
+    return { ...c, duration, start, end: acc };
   });
   return { timed, total: acc };
 }

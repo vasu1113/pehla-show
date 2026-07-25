@@ -1,61 +1,81 @@
-.balcony {
+/* Opera-house side wall of critic boxes. The boxes climb the wall; row 0 (top)
+   is highest. Notes open inward toward the stalls. */
+
+.critic-col {
   position: relative;
-  flex: 0 0 auto;
-  width: 100%;
-  overflow: visible; /* notes hang below the rail */
-  padding-top: 4px;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  padding: 6px 0;
 }
 
-.balcony-label {
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--bone-faint);
-  text-align: center;
-  margin-bottom: 4px;
-}
+.critic-col--left { align-items: flex-start; }
+.critic-col--right { align-items: flex-end; }
 
-/* the rail the critics sit behind */
-.balcony-rail {
+/* A single opera box — a recessed niche with a curved top and a front rail. */
+.opera-box {
   position: relative;
-  height: 50px;
-  border-bottom: 1px solid var(--bone-faint);
-  background: linear-gradient(180deg, #0a0805 0%, transparent 100%);
-}
-
-.critic {
-  position: absolute;
-  bottom: 0;
-  transform: translateX(-50%);
+  width: 104px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding-top: 6px;
+  background: linear-gradient(180deg, #0a0805 0%, #14110d 100%);
+  border: 1px solid var(--bone-faint);
+  border-radius: 10px 10px 3px 3px;
+  box-shadow: inset 0 6px 14px rgba(0, 0, 0, 0.7);
+}
+
+/* higher boxes sit a touch further into the wall (perspective) */
+.critic-col--left .opera-box:nth-child(1) { margin-left: 0; }
+.critic-col--left .opera-box:nth-child(2) { margin-left: 6px; }
+.critic-col--left .opera-box:nth-child(3) { margin-left: 12px; }
+.critic-col--right .opera-box:nth-child(1) { margin-right: 0; }
+.critic-col--right .opera-box:nth-child(2) { margin-right: 6px; }
+
+.box-interior {
+  position: relative;
+  width: 100%;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  overflow: hidden;
 }
 
 .critic-svg { display: block; }
-
-/* silhouette figure — near-black, distinct from the audience */
 .critic-body { fill: #060504; }
 .critic-head { fill: #060504; }
-.critic-rim { fill: var(--beam); opacity: 0.18; }
+.critic-rim { fill: var(--beam); opacity: 0.16; }
 
-.critic-tag {
+/* front rail of the box, occluding the figure's lower half so they read as
+   seated behind it */
+.box-rail {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 13px;
+  background: linear-gradient(180deg, var(--ink-lift), #0d0b08);
+  border-top: 1px solid var(--bone-dim);
+}
+
+.box-tag {
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
   font-size: 7.5px;
   letter-spacing: 0.14em;
   color: var(--bone-faint);
-  margin-top: 1px;
+  padding: 2px 0 4px;
 }
 
-/* the analytical note — larger and named, distinct from the crowd's pills.
-   Hangs below the rail, over the top of the auditorium. */
+/* The analytical note — named, larger than the crowd's pills, opening inward. */
 .critic-note {
   position: absolute;
-  top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 168px;
+  top: 50%;
+  width: 154px;
   padding: 7px 10px;
   background: var(--ink-lift);
   border: 1px solid var(--bone-dim);
@@ -67,15 +87,26 @@
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
 }
 
+.critic-note--left {
+  left: 100%;
+  margin-left: 10px;
+  transform: translateY(-50%);
+}
+.critic-note--right {
+  right: 100%;
+  margin-right: 10px;
+  transform: translateY(-50%);
+}
+
 .critic-note::after {
   content: "";
   position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translateY(-50%);
   border: 5px solid transparent;
-  border-bottom-color: var(--bone-dim);
 }
+.critic-note--left::after { left: -10px; border-right-color: var(--bone-dim); }
+.critic-note--right::after { right: -10px; border-left-color: var(--bone-dim); }
 
 .cn-who {
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
