@@ -1,0 +1,93 @@
+.balcony {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  overflow: visible; /* notes hang below the rail */
+  padding-top: 4px;
+}
+
+.balcony-label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+/* the rail the critics sit behind */
+.balcony-rail {
+  position: relative;
+  height: 50px;
+  border-bottom: 1px solid var(--bone-faint);
+  background: linear-gradient(180deg, #0a0805 0%, transparent 100%);
+}
+
+.critic {
+  position: absolute;
+  bottom: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.critic-svg { display: block; }
+
+/* silhouette figure — near-black, distinct from the audience */
+.critic-body { fill: #060504; }
+.critic-head { fill: #060504; }
+.critic-rim { fill: var(--beam); opacity: 0.18; }
+
+.critic-tag {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 7.5px;
+  letter-spacing: 0.14em;
+  color: var(--bone-faint);
+  margin-top: 1px;
+}
+
+/* the analytical note — larger and named, distinct from the crowd's pills.
+   Hangs below the rail, over the top of the auditorium. */
+.critic-note {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 168px;
+  padding: 7px 10px;
+  background: var(--ink-lift);
+  border: 1px solid var(--bone-dim);
+  border-radius: 4px;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+}
+
+.critic-note::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: var(--bone-dim);
+}
+
+.cn-who {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+}
+
+.cn-text {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--bone);
+}

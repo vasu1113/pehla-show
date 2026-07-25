@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { FilmStrip } from './film/FilmStrip';
 import { ScriptPane } from './components/ScriptPane';
 import { AudienceLayer } from './audience/AudienceLayer';
+import { CriticsBalcony } from './critics/CriticsBalcony';
 import { FILM_CHUNKS, buildTimeline, chunkAtTime } from './film/filmData';
 import { PlaybackBar } from './components/PlaybackBar';
 import { useClock } from './clock/useClock';
@@ -33,9 +34,13 @@ export default function App() {
             <FilmStrip />
           </div>
 
-          {/* NX1 — Track-B prototype audience (Track A's Theatre.jsx untouched,
-              reconciled at wire-in). key replays the arrivals. */}
-          <AudienceLayer key={arrivalKey} />
+          {/* The house: critics up in the balcony (still, analytical), the
+              clueless crowd below — the live A/B. NX1/NX2 audience is a Track-B
+              prototype; Track A's Theatre.jsx stays untouched (reconcile at B8). */}
+          <div className="house">
+            <CriticsBalcony />
+            <AudienceLayer key={arrivalKey} />
+          </div>
 
           <div className="caption">
             <span>the screen + 30 listeners</span>

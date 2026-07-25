@@ -56,6 +56,17 @@
   margin: 0 auto;
 }
 
+/* The house: balcony (critics) stacked above the audience floor. */
+.house {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: 660px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
 .caption {
   display: flex;
   justify-content: space-between;
