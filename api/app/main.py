@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import secrets
 from collections.abc import Coroutine
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -37,7 +38,12 @@ app.add_middleware(
 )
 
 _executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="pipeline")
+log = logging.getLogger(__name__)
+
 _tasks: set[Future[Any]] = set()
+#: task -> run_id, so a crashed task can mark its run instead of leaving
+#: the client polling an "analysing" run that will never resolve.
+_task_runs: dict[Future[Any], str] = {}
 
 
 def _new_run_id() -> str:
@@ -50,12 +56,40 @@ def _run_background(coroutine: Coroutine[Any, Any, Any]) -> Any:
 
 def _task_finished(task: Future[Any]) -> None:
     _tasks.discard(task)
-    task.exception()
+    error = task.exception()
+    if error is None:
+        return
+
+    # Anything escaping the pipeline's own try/except lands here. Swallowing
+    # it leaves the run stuck on "analysing" forever and the UI polling a run
+    # that will never resolve — the one failure mode the contract has no
+    # answer for. Log it, and mark the run so the poll terminates.
+    log.error("background pipeline task failed", exc_info=error)
+    run_id = _task_runs.pop(task, None)
+    if run_id is None:
+        return
+    run = store.get(run_id)
+    if run is not None and run.status == "analysing":
+        store.save(
+            run.model_copy(
+                update={
+                    "status": "error",
+                    "warnings": [
+                        *run.warnings,
+                        models.Warning(
+                            code="PIPELINE_CRASHED",
+                            message="The analysis stopped unexpectedly.",
+                        ),
+                    ],
+                }
+            )
+        )
 
 
-def _start(coroutine: Coroutine[Any, Any, Any]) -> None:
+def _start(coroutine: Coroutine[Any, Any, Any], run_id: str) -> None:
     task = _executor.submit(_run_background, coroutine)
     _tasks.add(task)
+    _task_runs[task] = run_id
     task.add_done_callback(_task_finished)
 
 
@@ -121,7 +155,8 @@ async def start_analysis(body: AnalyseBody) -> JSONResponse:
             body.raw_text,
             body.title or "Untitled",
             body.cohort_ids,
-        )
+        ),
+        run_id,
     )
     return JSONResponse(
         {
@@ -162,6 +197,13 @@ async def fix_run(run_id: str, body: FixBody) -> JSONResponse:
     parent = store.get(run_id)
     if parent is None:
         raise HTTPException(status_code=404, detail="Run not found.")
+    # Fixing a run that is still analysing (or that failed) would start a
+    # pipeline against half a screening and immediately error. Say so.
+    if parent.status != "ready":
+        raise HTTPException(
+            status_code=409,
+            detail=f"Run {run_id} is not ready (status={parent.status}).",
+        )
 
     selected_fix = (
         body.fix
@@ -189,7 +231,10 @@ async def fix_run(run_id: str, body: FixBody) -> JSONResponse:
             script=parent.script.model_copy(deep=True),
         )
     )
-    _start(pipeline.apply_recommended_fix(parent, selected_fix, fixed_run_id))
+    _start(
+        pipeline.apply_recommended_fix(parent, selected_fix, fixed_run_id),
+        fixed_run_id,
+    )
     return JSONResponse(
         {
             "run_id": fixed_run_id,

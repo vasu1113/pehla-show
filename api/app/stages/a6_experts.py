@@ -229,8 +229,12 @@ async def convene_room(
         if result.ok and result.value is not None
         for note in result.value
     ]
+    # Renumber across all five agents here — run_expert cannot know how many
+    # notes its peers filed, so its per-agent ids are provisional. Width grows
+    # past 99 rather than silently dropping the zero padding.
+    width = max(2, len(str(len(notes))))
     notes = [
-        note.model_copy(update={"id": f"n_{index + 1:02d}"})
+        note.model_copy(update={"id": f"n_{index + 1:0{width}d}"})
         for index, note in enumerate(notes)
     ]
     warnings = [_dropped_warning(failed)] if failed else []
