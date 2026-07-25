@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 from datetime import datetime, timezone
 
 from app import cache, config, models, store
@@ -50,32 +49,11 @@ def _progress(
     )
 
 
-def _load_personas(cohort_ids: list[str] | None = None) -> list[models.Persona]:
-    raw = json.loads((config.DATA_DIR / "personas.json").read_text(encoding="utf-8"))
-    personas: list[models.Persona] = []
-    for item in raw["cohorts"]:
-        persona_data = {
-            "id": item["id"],
-            "label": item["label"],
-            "persona_type": item.get("persona_type"),
-            "prompt": item.get("prompt", item.get("context")),
-            "calibrated_from": item.get("calibrated_from", 0),
-        }
-        personas.append(models.Persona.model_validate(persona_data))
-    # An explicit empty list is not a request for an empty hall — the contract
-    # says cohort_ids is optional and defaults to all six, so treat "none
-    # specified" the same either way rather than silently screening to nobody.
-    if not cohort_ids:
-        return personas
-
-    requested = set(cohort_ids)
-    selected = [persona for persona in personas if persona.id in requested]
-    if not selected:
-        raise ValueError(
-            f"No known cohorts in {sorted(requested)}; "
-            f"expected some of {sorted(p.id for p in personas)}."
-        )
-    return selected
+def _load_personas(persona_ids: list[str] | None = None) -> list[models.Persona]:
+    if persona_ids:
+        return store.get_personas(persona_ids)
+    required = config.SEAT_COUNT // a0_cast.SEATS_PER_PERSONA
+    return store.list_personas()[:required]
 
 
 def _script_meta(
@@ -279,7 +257,7 @@ async def analyse(
     run_id: str,
     raw_text: str,
     title: str,
-    cohort_ids: list[str] | None = None,
+    persona_ids: list[str] | None = None,
 ) -> models.Run:
     run = models.Run(
         run_id=run_id,
@@ -322,7 +300,7 @@ async def analyse(
 
     try:
         _progress(run_id, models.Stage.SEATING_AUDIENCE, 25)
-        personas = _load_personas(cohort_ids)
+        personas = _load_personas(persona_ids)
         kept, audience, drops, warnings = await _screen(
             run_id,
             beats,

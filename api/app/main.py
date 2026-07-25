@@ -15,13 +15,14 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from app import config, models, pipeline, store
+from app.stages import a0_cast
 from app.stages.a1_parse import content_hash
 
 
 class AnalyseBody(BaseModel):
     raw_text: str
     title: str | None = None
-    cohort_ids: list[str] | None = None
+    persona_ids: list[str] | None = None
 
 
 class FixBody(BaseModel):
@@ -124,6 +125,27 @@ async def start_analysis(body: AnalyseBody) -> JSONResponse:
             detail=f"Script must contain at most {config.MAX_WORDS} words.",
         )
 
+    required_personas = config.SEAT_COUNT // a0_cast.SEATS_PER_PERSONA
+    if (
+        body.persona_ids is not None
+        and len(body.persona_ids) != required_personas
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"{len(body.persona_ids)} persona ids given; "
+                f"{required_personas} needed."
+            ),
+        )
+    if body.persona_ids is not None:
+        try:
+            store.get_personas(body.persona_ids)
+        except KeyError as error:
+            raise HTTPException(
+                status_code=400,
+                detail=error.args[0],
+            ) from error
+
     pinned = store.find_pinned(content_hash(body.raw_text))
     if pinned is not None:
         return JSONResponse(
@@ -154,7 +176,7 @@ async def start_analysis(body: AnalyseBody) -> JSONResponse:
             run_id,
             body.raw_text,
             body.title or "Untitled",
-            body.cohort_ids,
+            body.persona_ids,
         ),
         run_id,
     )
@@ -247,7 +269,15 @@ async def fix_run(run_id: str, body: FixBody) -> JSONResponse:
 
 @app.get("/personas")
 async def get_personas() -> JSONResponse:
-    return _json_file("personas.json")
+    # This endpoint used to expose a "cohorts" key; these are library entries.
+    return JSONResponse(
+        {
+            "personas": [
+                persona.model_dump(mode="json")
+                for persona in store.list_personas()
+            ]
+        }
+    )
 
 
 @app.get("/taxonomy")

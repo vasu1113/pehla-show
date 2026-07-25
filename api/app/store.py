@@ -6,7 +6,7 @@ from types import ModuleType
 from typing import Any
 
 from app import config
-from app.models import Progress, Run
+from app.models import Persona, Progress, Run
 
 
 _runs: dict[str, Run] = {}
@@ -37,6 +37,50 @@ def _write_json(name: str, value: Any) -> None:
     temporary = path.with_suffix(".tmp")
     temporary.write_text(json.dumps(value, indent=2), encoding="utf-8")
     temporary.replace(path)
+
+
+def _list_file_personas() -> list[Persona]:
+    raw = json.loads(
+        (config.DATA_DIR / "personas.json").read_text(encoding="utf-8")
+    )
+    return [
+        Persona.model_validate(
+            {
+                "id": item["id"],
+                "label": item["label"],
+                "persona_type": item.get("persona_type"),
+                "prompt": item.get("prompt", item.get("context")),
+                "calibrated_from": item.get("calibrated_from", 0),
+            }
+        )
+        for item in raw["cohorts"]
+    ]
+
+
+def _select_personas(
+    personas: list[Persona],
+    ids: list[str],
+) -> list[Persona]:
+    by_id = {persona.id: persona for persona in personas}
+    selected: list[Persona] = []
+    for persona_id in ids:
+        persona = by_id.get(persona_id)
+        if persona is None:
+            raise KeyError(f"Unknown persona id: {persona_id}")
+        selected.append(persona)
+    return selected
+
+
+def list_personas() -> list[Persona]:
+    if config.STORE_BACKEND == "supabase":
+        return _backend().list_personas()
+    return _list_file_personas()
+
+
+def get_personas(ids: list[str]) -> list[Persona]:
+    if config.STORE_BACKEND == "supabase":
+        return _backend().get_personas(ids)
+    return _select_personas(_list_file_personas(), ids)
 
 
 def _load() -> None:

@@ -5,7 +5,7 @@ from threading import RLock
 from typing import Any
 
 from app import config
-from app.models import Beat, Progress, Run
+from app.models import Beat, Persona, Progress, Run
 
 
 logger = logging.getLogger(__name__)
@@ -38,6 +38,28 @@ def _data(response: Any) -> list[dict[str, Any]]:
     if not isinstance(data, list):
         return []
     return [row for row in data if isinstance(row, dict)]
+
+
+def list_personas() -> list[Persona]:
+    try:
+        response = (
+            get_client()
+            .table("personas")
+            .select("id, label, persona_type, prompt, calibrated_from")
+            .execute()
+        )
+        return [Persona.model_validate(row) for row in _data(response)]
+    except Exception:
+        logger.exception("Could not list Supabase personas; using file library")
+        from app import store
+
+        return store._list_file_personas()
+
+
+def get_personas(ids: list[str]) -> list[Persona]:
+    from app import store
+
+    return store._select_personas(list_personas(), ids)
 
 
 def save(

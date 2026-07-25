@@ -140,10 +140,10 @@ def test_walkouts_contradict_a_note_defending_the_material() -> None:
     assert "audience" in by_agent[AgentId.editor].agrees_with
 
 
-# ── cohort selection ──────────────────────────────────────────────────────
+# ── persona selection ─────────────────────────────────────────────────────
 
 
-def test_empty_cohort_ids_screens_to_everyone_not_to_nobody() -> None:
+def test_empty_persona_ids_screens_to_everyone_not_to_nobody() -> None:
     """An empty list is not a request for an empty hall."""
     assert len(pipeline._load_personas([])) == 6
     assert len(pipeline._load_personas(None)) == 6
@@ -151,12 +151,12 @@ def test_empty_cohort_ids_screens_to_everyone_not_to_nobody() -> None:
 
 def test_selecting_a_subset_works() -> None:
     picked = pipeline._load_personas(["commuter", "sleep"])
-    assert {p.id for p in picked} == {"commuter", "sleep"}
+    assert [p.id for p in picked] == ["commuter", "sleep"]
 
 
-def test_entirely_unknown_cohorts_are_an_error_not_an_empty_hall() -> None:
-    with pytest.raises(ValueError):
-        pipeline._load_personas(["not_a_cohort"])
+def test_unknown_personas_are_an_error_not_an_empty_hall() -> None:
+    with pytest.raises(KeyError, match="not_a_persona"):
+        pipeline._load_personas(["not_a_persona"])
 
 
 # ── the fix validator ─────────────────────────────────────────────────────
