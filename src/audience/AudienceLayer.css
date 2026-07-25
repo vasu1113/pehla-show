@@ -140,3 +140,58 @@
   .seat-slot { animation: none; }
   .expectation-bubble { animation: none; opacity: 0; } /* no flashing bubbles */
 }
+
+/* ── The walkout (Track A's exit, on Track B's figures) ──────────────────
+   Its own wrapper so the `arrive` keyframes keep sole ownership of
+   left/top/opacity on .seat-slot. Transform + opacity only, so thirty
+   people can leave at once without a layout pass. */
+.exit-wrap {
+  transition: none;
+  will-change: transform, opacity;
+}
+
+.exit-wrap[role='button'] {
+  cursor: pointer;
+}
+
+.seated-count {
+  position: absolute;
+  left: 0;
+  bottom: 6px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+}
+
+/* Who just left, and the phrase that lost them. The payload of the whole
+   product — an individual reason, not an aggregate. */
+.who-card {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 300;
+  max-width: 300px;
+  padding: 12px 14px;
+  background: var(--ink);
+  border: 1px solid var(--bone-faint);
+}
+
+.who-name { font-size: 13px; color: var(--bone); }
+
+.who-meta {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+  margin-top: 3px;
+}
+
+.who-body { font-size: 12px; color: var(--bone-dim); margin: 9px 0 0; }
+
+.who-evidence {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--beam);
+  margin: 7px 0 10px;
+}
