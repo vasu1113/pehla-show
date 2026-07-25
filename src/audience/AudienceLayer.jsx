@@ -6,6 +6,7 @@ import { useRunAudience } from './useRunAudience';
 import { useClock } from '../clock/useClock';
 import { FILM_CHUNKS, buildTimeline } from '../film/filmData';
 import { stateFor, ease } from '../figures';
+import { useHighlight } from '../highlight/highlightStore';
 import './AudienceLayer.css';
 
 /**
@@ -19,13 +20,19 @@ import './AudienceLayer.css';
  * Pure function of the clock: scrub to the end and the hall reacts; scrub back
  * and everyone walks in again.
  */
-const Figures = memo(function Figures({ people, currentSeconds, total, entered }) {
+const Figures = memo(function Figures({ people, currentSeconds, total, entered, highlight }) {
   const inVerdict = currentSeconds >= total;
   return (
     <>
       {people.map((p) => {
         const { state, t } = stateFor(p.id, p.leftAtSec, currentSeconds);
         if (state === 'gone') return null;
+
+        // Analytics ↔ seats: lit when its cohort or its seat is highlighted.
+        const lit =
+          highlight &&
+          ((highlight.cohort && (p.cohort === highlight.cohort || p.type === highlight.cohort)) ||
+            (highlight.seats && (highlight.seats.includes(p.id) || highlight.seats.includes(p.seat))));
 
         // Stand, shuffle to the aisle, then away — mirrors Track A's exit.
         let exit = '';
@@ -47,7 +54,7 @@ const Figures = memo(function Figures({ people, currentSeconds, total, entered }
         return (
           <div
             key={p.id}
-            className={`seat-slot${entered ? ' is-seated' : ''}${poseClass}`}
+            className={`seat-slot${entered ? ' is-seated' : ''}${poseClass}${lit ? ' is-highlit' : ''}`}
             style={{
               left: `${p.fl}%`,
               top: `${p.ft}%`,
@@ -197,6 +204,8 @@ export function AudienceLayer({ entered = false }) {
   const { people } = useRunAudience(duration);
   const { timed, total } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
   const inVerdict = currentSeconds >= total;
+  const highlight = useHighlight();
+  const hasHighlight = Boolean(highlight.cohort || highlight.seats);
 
   const seated = people.filter(
     (p) => stateFor(p.id, p.leftAtSec, currentSeconds).state === 'here',
@@ -204,8 +213,8 @@ export function AudienceLayer({ entered = false }) {
 
   return (
     <div className="audience">
-      <div className="audience-floor">
-        <Figures people={people} currentSeconds={currentSeconds} total={total} entered={entered} />
+      <div className={`audience-floor${hasHighlight ? ' has-highlight' : ''}`}>
+        <Figures people={people} currentSeconds={currentSeconds} total={total} entered={entered} highlight={highlight} />
         {!inVerdict && <LiveThoughts people={people} currentSeconds={currentSeconds} />}
         {inVerdict && <VerdictBubbles people={people} total={total} />}
         <Popcorn people={people} timed={timed} total={total} currentSeconds={currentSeconds} />

@@ -261,3 +261,11 @@
   color: var(--beam);
   margin: 7px 0 10px;
 }
+
+/* Analytics ↔ seats link: dim the room, glow the matched seats. Applied to the
+   inner wrapper so it never fights the .seat-slot arrive keyframes. */
+.fig-wrap { transition: opacity 220ms ease, filter 220ms ease; }
+.audience-floor.has-highlight .seat-slot:not(.is-highlit) .fig-wrap { opacity: 0.22; }
+.seat-slot.is-highlit .fig-wrap {
+  filter: drop-shadow(0 0 5px var(--beam)) drop-shadow(0 0 2px var(--beam));
+}

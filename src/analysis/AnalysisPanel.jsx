@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { clock, useClock } from '../clock/useClock';
 import { FILM_CHUNKS, buildTimeline } from '../film/filmData';
 import { runSecToClock, useRun } from '../data/useRun';
+import { highlightStore } from '../highlight/highlightStore';
 import './AnalysisPanel.css';
 
 const pct = (v) => `${(v * 100).toFixed(1)}%`;
@@ -97,7 +98,12 @@ function CohortRetention({ cohorts = [] }) {
       <div className="an-label">WHO STAYED WITH IT</div>
       <div className="an-multiples">
         {cohorts.map((cohort) => (
-          <div className="an-mult" key={cohort.id}>
+          <div
+            className="an-mult"
+            key={cohort.id}
+            onMouseEnter={() => highlightStore.cohort(cohort.id)}
+            onMouseLeave={() => highlightStore.clear()}
+          >
             <div className="an-mult-head">
               <span className="an-mult-type">{cohort.label}</span>
               <span className="an-mult-val">{pct(cohort.retained_pct)}</span>
@@ -195,7 +201,12 @@ function DropInsights({ run }) {
         const action = run.notes.find((note) => note.anchored_to_drop === drop.id)?.text
           ?? run.room_synthesis?.recommended_fix;
         return (
-          <article className="an-insight" key={drop.id}>
+          <article
+            className="an-insight"
+            key={drop.id}
+            onMouseEnter={() => highlightStore.seats(drop.seats_lost)}
+            onMouseLeave={() => highlightStore.clear()}
+          >
             <div className="an-insight-time">{formatRunTime(drop.timestamp)} · {percent}% physically left · {attentionAffected} attention signals</div>
             <div className="an-insight-title">{drop.reason_label}</div>
             <p>{drop.evidence}</p>
