@@ -1,0 +1,79 @@
+.script-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  border-right: 1px solid var(--bone-faint);
+  background: var(--ink);
+}
+
+.script-head {
+  padding: 14px 18px 10px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  border-bottom: 1px solid var(--bone-faint);
+}
+
+.script-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 0 40vh; /* trailing space so the last chunk can scroll up */
+}
+
+.script-chunk {
+  padding: 14px 18px;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  transition: background 200ms ease, border-color 200ms ease, opacity 200ms ease;
+  opacity: 0.5;
+}
+
+.script-chunk:hover {
+  opacity: 0.8;
+  background: rgba(237, 232, 223, 0.03);
+}
+
+.script-chunk.is-active {
+  opacity: 1;
+  border-left-color: var(--bone);
+  background: rgba(237, 232, 223, 0.05);
+}
+
+.sc-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.sc-type {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+}
+
+.sc-time {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--bone-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.sc-text {
+  margin: 0;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--bone);
+}
+
+.script-chunk:not(.is-active) .sc-text {
+  color: var(--bone-dim);
+}

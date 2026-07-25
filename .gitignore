@@ -1,10 +1,24 @@
+# dependencies
 node_modules/
-dist/
-.DS_Store
-*.log
 
-# Track A
+# build output
+dist/
+
+# secrets — API keys live here, never in the repo
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+
+# editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# Track A — python
 api/.venv/
 api/.runs/
-api/.env
 __pycache__/

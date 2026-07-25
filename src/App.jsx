@@ -1,155 +1,70 @@
-import { useEffect, useRef, useState } from 'react';
-import Theatre from './Theatre';
-
-// THE ONLY CLOCK.
-//
-// currentTime lives here and nowhere else. Theatre is a pure function
-// of it. Playback advances it via requestAnimationFrame; scrubbing sets
-// it directly and everything re-derives from scratch — including seats
-// refilling when you scrub backwards.
-
-const SPEEDS = [1, 2, 4];
+import { useState, useMemo } from 'react';
+import { FilmStrip } from './film/FilmStrip';
+import { ScriptPane } from './components/ScriptPane';
+import { AudienceLayer } from './audience/AudienceLayer';
+import { CriticBoxes } from './critics/CriticsBalcony';
+import { FILM_CHUNKS, buildTimeline, chunkAtTime } from './film/filmData';
+import { PlaybackBar } from './components/PlaybackBar';
+import { useClock } from './clock/useClock';
+import { formatTime } from './clock/format';
+import './App.css';
 
 export default function App() {
-  const [run, setRun] = useState(null);
-  const [loadError, setLoadError] = useState(null);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1);
-  const [highlightSeat, setHighlightSeat] = useState(null);
-  const [showIndex, setShowIndex] = useState(false);
+  // Bumping this remounts the audience layer, replaying the arrivals.
+  const [arrivalKey, setArrivalKey] = useState(0);
+  const { currentSeconds, duration, speed, isPlaying } = useClock();
 
-  // Track A builds against the mock until the API is live; swapping to
-  // GET /runs/{id} is a one-line change here and nowhere else.
-  useEffect(() => {
-    fetch('/data/mockRun.json')
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
-      .then(setRun)
-      .catch(() => setLoadError('no mockRun.json yet — showing an empty hall'));
-  }, []);
-
-  const duration = run?.script?.duration_sec ?? 600;
-  const audience = run?.audience ?? [];
-
-  const raf = useRef(0);
-  const last = useRef(0);
-  useEffect(() => {
-    if (!isPlaying) return;
-    last.current = performance.now();
-
-    const tick = (now) => {
-      const dt = (now - last.current) / 1000;
-      last.current = now;
-      setCurrentTime((t) => {
-        const next = t + dt * speed;
-        if (next >= duration) {
-          setIsPlaying(false);
-          return duration;
-        }
-        return next;
-      });
-      raf.current = requestAnimationFrame(tick);
-    };
-
-    raf.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf.current);
-  }, [isPlaying, speed, duration]);
-
-  const seated = audience.filter(
-    (m) => m.left_at_sec == null || m.left_at_sec > currentTime
-  ).length;
-
-  const selected =
-    highlightSeat == null
-      ? null
-      : audience.find((m) => m.seat === highlightSeat) ?? null;
+  const { timed } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
+  const { index, chunk } = chunkAtTime(timed, currentSeconds);
 
   return (
-    <div className="stage">
-      <div className="stage-inner">
-        <Theatre
-          showIndex={showIndex}
-          audience={audience}
-          currentTime={currentTime}
-          onSeatClick={(s) => setHighlightSeat((cur) => (cur === s ? null : s))}
-          highlightSeat={highlightSeat}
-        />
+    <div className="show">
+      <header className="show-header">
+        <span className="sh-title">PEHLA SHOW</span>
+        <span className="sh-sub">the screen · track b</span>
+      </header>
 
-        <div className="transport">
-          <button className="ghost" onClick={() => setIsPlaying((p) => !p)}>
-            {isPlaying ? 'pause' : 'play'}
-          </button>
+      <div className="show-body">
+        {/* Left column — the script (B3), about a third. */}
+        <ScriptPane />
 
-          <input
-            className="scrub"
-            type="range"
-            min={0}
-            max={duration}
-            step={0.1}
-            value={currentTime}
-            onChange={(e) => {
-              setIsPlaying(false);
-              setCurrentTime(Number(e.target.value));
-            }}
-          />
+        {/* Right column — the cinema: screen (B5) on top, audience below. */}
+        <div className="show-right">
+          <div className="screen-wrap">
+            <FilmStrip />
+          </div>
 
-          <span className="readout">
-            {fmt(currentTime)} / {fmt(duration)}
-          </span>
+          {/* The house — an opera-house horseshoe: the clueless crowd in the
+              centre stalls, critics in boxes climbing the side walls (the live
+              A/B). NX1/NX2 audience is a Track-B prototype; Track A's Theatre.jsx
+              stays untouched (reconcile at B8). */}
+          <div className="house">
+            <CriticBoxes side="left" />
+            <AudienceLayer key={arrivalKey} />
+            <CriticBoxes side="right" />
+          </div>
 
-          <button
-            className="ghost"
-            onClick={() =>
-              setSpeed((s) => SPEEDS[(SPEEDS.indexOf(s) + 1) % SPEEDS.length])
-            }
-          >
-            {speed}&times;
-          </button>
-        </div>
-
-        <div className="caption">
-          <span>
-            {audience.length
-              ? `${seated} of ${audience.length} still seated`
-              : loadError ?? 'loading'}
-          </span>
-          <button className="ghost" onClick={() => setShowIndex((v) => !v)}>
-            {showIndex ? 'hide' : 'show'} seat numbers
-          </button>
-        </div>
-
-        {selected && (
-          <div className="tooltip">
-            <div className="tooltip-name">{selected.name}</div>
-            <div className="tooltip-meta">
-              seat {selected.seat} &middot; {selected.cohort}
-            </div>
-            {selected.left_at_sec == null ? (
-              <p className="tooltip-body">Stayed to the end.</p>
-            ) : (
-              <>
-                <p className="tooltip-body">
-                  Left at {fmt(selected.left_at_sec)} &mdash;{' '}
-                  {selected.reason_label ?? selected.reason_code}
-                </p>
-                {selected.evidence && (
-                  <p className="tooltip-evidence">
-                    &ldquo;{selected.evidence}&rdquo;
-                  </p>
-                )}
-              </>
-            )}
-            <button className="ghost" onClick={() => setHighlightSeat(null)}>
-              close
+          <div className="caption">
+            <span>the screen + 30 listeners</span>
+            <button className="ghost-btn" onClick={() => setArrivalKey((k) => k + 1)}>
+              replay arrivals
             </button>
           </div>
-        )}
+        </div>
       </div>
+
+      {/* An independent reader of THE CLOCK, reading the SAME timeline the
+          screen and script do — a live cross-check that nothing drifts. */}
+      <div className="clock-readout">
+        <span className="cr-item">CLOCK <b>{currentSeconds.toFixed(2)}s</b></span>
+        <span className="cr-item">{formatTime(currentSeconds)} / {formatTime(duration)}</span>
+        <span className="cr-item">
+          CHUNK <b>{chunk ? `${String(index + 1).padStart(2, '0')} · ${chunk.type}` : '—'}</b>
+        </span>
+        <span className="cr-item">{isPlaying ? 'PLAYING' : 'PAUSED'} · {speed}&times;</span>
+      </div>
+
+      <PlaybackBar />
     </div>
   );
-}
-
-function fmt(sec) {
-  const s = Math.max(0, Math.floor(sec));
-  return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 }
