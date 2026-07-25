@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { generateAudience } from './audienceData';
-import { normalizeRun } from '../data/useRun';
+import { useRun } from '../data/useRun';
 
 /**
  * Marries Track B's seating to Track A's screening.
@@ -26,21 +26,7 @@ function scaleToClock(seconds, runDuration, clockDuration) {
 
 export function useRunAudience(clockDuration) {
   const seats = useMemo(() => generateAudience(), []);
-  const [run, setRun] = useState(null);
-
-  useEffect(() => {
-    let live = true;
-    fetch('/data/mockRun.json')
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
-      .then(normalizeRun)
-      .then((d) => live && setRun(d))
-      .catch(() => {
-        /* no run yet — Track B's arrivals still play, nobody leaves */
-      });
-    return () => {
-      live = false;
-    };
-  }, []);
+  const { run } = useRun();
 
   const people = useMemo(() => {
     const bySeat = new Map((run?.audience ?? []).map((m) => [m.seat, m]));

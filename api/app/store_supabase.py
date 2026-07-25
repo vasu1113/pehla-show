@@ -4,8 +4,8 @@ import logging
 from threading import RLock
 from typing import Any
 
-from app import config
-from app.models import Beat, Persona, Progress, Run
+from app import analysis_config, config
+from app.models import AnalysisConfig, Beat, Persona, Progress, Run
 
 
 logger = logging.getLogger(__name__)
@@ -69,20 +69,17 @@ def save(
 ) -> None:
     try:
         client = get_client()
-        # The Run contract currently omits both values. Callers that know them
-        # should pass them until /analyse is wired to do so.
-        client.table("scripts").upsert(
-            {
-                "id": run.script.id,
-                "title": run.script.title,
-                "raw_text": raw_text if raw_text is not None else "",
-                "content_hash": (
-                    content_hash if content_hash is not None else run.script.id
-                ),
-                "word_count": run.script.word_count,
-            },
-            on_conflict="id",
-        ).execute()
+        if raw_text is not None and content_hash is not None:
+            client.table("scripts").upsert(
+                {
+                    "id": run.script.id,
+                    "title": run.script.title,
+                    "raw_text": raw_text,
+                    "content_hash": content_hash,
+                    "word_count": run.script.word_count,
+                },
+                on_conflict="id",
+            ).execute()
         client.table("runs").upsert(
             {
                 "id": run.run_id,
@@ -156,6 +153,7 @@ def get_progress(run_id: str) -> Progress | None:
 def find_pinned(
     content_hash: str,
     variant: str = "original",
+    requested: AnalysisConfig | None = None,
 ) -> Run | None:
     try:
         script_response = (
@@ -177,13 +175,16 @@ def find_pinned(
             .eq("script_id", scripts[0].get("id"))
             .eq("variant", variant)
             .eq("is_pinned", True)
-            .limit(1)
             .execute()
         )
-        runs = _data(run_response)
-        if not runs:
-            return None
-        return Run.model_validate(runs[0].get("result_json"))
+        for row in _data(run_response):
+            try:
+                run = Run.model_validate(row.get("result_json"))
+            except (TypeError, ValueError):
+                continue
+            if analysis_config.matches(run, requested):
+                return run
+        return None
     except Exception:
         logger.exception(
             "Could not resolve pinned run for content hash %s",

@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from app import config, models, pipeline, store
+from app import analysis_config, config, models, pipeline, store
 from app.stages import a0_cast
 from app.stages.a1_parse import content_hash
 
@@ -94,8 +94,12 @@ def _start(coroutine: Coroutine[Any, Any, Any], run_id: str) -> None:
     task.add_done_callback(_task_finished)
 
 
-def _queue(run: models.Run) -> None:
-    store.save(run)
+def _queue(
+    run: models.Run,
+    raw_text: str | None = None,
+    digest: str | None = None,
+) -> None:
+    store.save(run, raw_text=raw_text, content_hash=digest)
     store.set_progress(
         run.run_id,
         models.Progress(
@@ -146,7 +150,15 @@ async def start_analysis(body: AnalyseBody) -> JSONResponse:
                 detail=error.args[0],
             ) from error
 
-    pinned = store.find_pinned(content_hash(body.raw_text))
+    selected_persona_ids = body.persona_ids or [
+        persona.id for persona in store.list_personas()[:required_personas]
+    ]
+    requested_config = analysis_config.build(selected_persona_ids)
+    digest = content_hash(body.raw_text)
+    pinned = store.find_pinned(
+        digest,
+        requested=requested_config,
+    )
     if pinned is not None:
         return JSONResponse(
             {
@@ -163,13 +175,16 @@ async def start_analysis(body: AnalyseBody) -> JSONResponse:
             run_id=run_id,
             status="analysing",
             created_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            analysis_config=requested_config,
             script=models.ScriptMeta(
-                id=content_hash(body.raw_text)[:12],
+                id=digest[:12],
                 title=body.title or "Untitled",
                 duration_sec=0,
                 word_count=word_count,
             ),
-        )
+        ),
+        raw_text=body.raw_text,
+        digest=digest,
     )
     _start(
         pipeline.analyse(

@@ -4,7 +4,8 @@ import { buildVerdictBubbles, activeVerdictBubbles, popcornProgress } from './ve
 import { Figure } from './Figure';
 import { useRunAudience } from './useRunAudience';
 import { useClock } from '../clock/useClock';
-import { FILM_CHUNKS, buildTimeline } from '../film/filmData';
+import { buildTimeline, filmChunksForRun } from '../film/filmData';
+import { useRun } from '../data/useRun';
 import { stateFor, ease } from '../figures';
 import './AudienceLayer.css';
 
@@ -78,11 +79,11 @@ const Figures = memo(function Figures({ people, currentSeconds, total, entered }
  * NX2 — live thoughts during the film. Only from people still in the room:
  * a seat that emptied ninety seconds ago has no opinion about this chunk.
  */
-function LiveThoughts({ people, currentSeconds }) {
+function LiveThoughts({ people, currentSeconds, chunks }) {
   const schedule = useMemo(() => {
-    const { timed } = buildTimeline(FILM_CHUNKS);
+    const { timed } = buildTimeline(chunks);
     return buildThoughtSchedule(timed, people.length);
-  }, [people.length]);
+  }, [chunks, people.length]);
 
   const active = activeThoughts(schedule, currentSeconds).slice(0, 1);
   if (active.length === 0) return null;
@@ -194,8 +195,10 @@ function Popcorn({ people, timed, total, currentSeconds }) {
  */
 export function AudienceLayer({ entered = false }) {
   const { currentSeconds, duration } = useClock();
+  const { run } = useRun();
   const { people } = useRunAudience(duration);
-  const { timed, total } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
+  const chunks = useMemo(() => filmChunksForRun(run), [run]);
+  const { timed, total } = useMemo(() => buildTimeline(chunks), [chunks]);
   const inVerdict = currentSeconds >= total;
 
   const seated = people.filter(
@@ -206,7 +209,7 @@ export function AudienceLayer({ entered = false }) {
     <div className="audience">
       <div className="audience-floor">
         <Figures people={people} currentSeconds={currentSeconds} total={total} entered={entered} />
-        {!inVerdict && <LiveThoughts people={people} currentSeconds={currentSeconds} />}
+        {!inVerdict && <LiveThoughts people={people} currentSeconds={currentSeconds} chunks={chunks} />}
         {inVerdict && <VerdictBubbles people={people} total={total} />}
         <Popcorn people={people} timed={timed} total={total} currentSeconds={currentSeconds} />
       </div>

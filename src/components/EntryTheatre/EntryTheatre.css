@@ -1,6 +1,6 @@
 .entry-theatre { position: relative; min-height: 100vh; overflow: hidden; background: radial-gradient(70% 35% at 50% 9%, #292218, #100e0b 48%, var(--ink) 83%); }
 .entry-screen { position: absolute; top: 6%; left: 50%; width: min(56vw, 740px); padding: 8vh 0; transform: translateX(-50%); border: 1px solid var(--bone-faint); color: var(--bone-faint); text-align: center; font: 11px var(--mono); letter-spacing: .24em; }
-.entry-screen span, .entry-screen small { display: block; }.entry-screen small { margin-top: 12px; color: var(--bone-dim); font-size: 9px; letter-spacing: .13em; opacity: 0; }.entry-screen.is-bridging { color: var(--bone); background: radial-gradient(ellipse, rgba(237,232,223,.12), transparent 68%); }.entry-screen.is-bridging small { opacity: 1; }
+.entry-screen span, .entry-screen small { display: block; }.entry-screen small { margin-top: 12px; color: var(--bone-dim); font-size: 9px; letter-spacing: .13em; opacity: 1; }.entry-screen small.is-error { color: #d98c82; }.entry-screen.is-bridging { color: var(--bone); background: radial-gradient(ellipse, rgba(237,232,223,.12), transparent 68%); }
 .entry-doors { position: absolute; inset: 0; display: flex; pointer-events: none; }
 .entry-doors span { width: 50%; height: 100%; background: linear-gradient(90deg, rgba(8,7,5,.88), rgba(30,24,17,.8)); border-right: 1px solid rgba(237,232,223,.12); will-change: transform; }
 .entry-floor { position: absolute; inset: 25% 10% 0; overflow: hidden; background: radial-gradient(70% 50% at 50% 0%, rgba(255,246,224,.12), transparent 70%); }

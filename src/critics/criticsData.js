@@ -81,6 +81,9 @@ export function buildCriticSchedule(timed) {
   // In-film analytical notes.
   NOTES.forEach((n) => {
     const c = timed[n.chunk];
+    // Real scripts can contain fewer beats than the original canned film.
+    // Placeholder critic notes have no valid anchor in that case.
+    if (!c) return;
     const start = c.start + n.at;
     const end = Math.min(c.end - 0.1, start + n.dur);
     if (end > start + 0.8) {
