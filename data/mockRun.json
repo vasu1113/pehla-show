@@ -4,7 +4,7 @@
   "parent_run_id": null,
   "variant": "original",
   "status": "ready",
-  "created_at": "2026-07-25T08:31:09+00:00",
+  "created_at": "2026-07-25T08:40:38+00:00",
   "script": {
     "id": "d552d8a1d5b0",
     "title": "Adhoori Baat, Episode 1",
@@ -1726,9 +1726,304 @@
       "kind": "taste_split"
     }
   ],
-  "agents": [],
-  "notes": [],
-  "room_synthesis": null,
+  "agents": [
+    {
+      "id": "director",
+      "label": "The Director",
+      "lens": "staging and performance"
+    },
+    {
+      "id": "editor",
+      "label": "The Editor",
+      "lens": "structure and compression"
+    },
+    {
+      "id": "critic",
+      "label": "The Critic",
+      "lens": "originality and craft"
+    },
+    {
+      "id": "psychologist",
+      "label": "The Psychologist",
+      "lens": "motivation and behaviour"
+    },
+    {
+      "id": "historian",
+      "label": "The Historian",
+      "lens": "period and cultural authenticity"
+    }
+  ],
+  "notes": [
+    {
+      "id": "n_01",
+      "agent_id": "director",
+      "beat_id": 12,
+      "anchored_to_drop": "de_01",
+      "note_type": "UNPLAYABLE_BEAT",
+      "note_label": "Beat cannot be staged",
+      "text": "Director note on chunk 12.",
+      "evidence": "and so it had been for many years",
+      "severity": 2,
+      "agrees_with": [
+        "audience",
+        "critic",
+        "editor",
+        "historian",
+        "psychologist"
+      ],
+      "disagrees_with": []
+    },
+    {
+      "id": "n_02",
+      "agent_id": "director",
+      "beat_id": 16,
+      "anchored_to_drop": "de_02",
+      "note_type": "NO_VISUAL_ANCHOR",
+      "note_label": "No visual anchor",
+      "text": "Director note on chunk 16.",
+      "evidence": "and so it had been for many years",
+      "severity": 2,
+      "agrees_with": [
+        "audience",
+        "critic",
+        "editor",
+        "historian",
+        "psychologist"
+      ],
+      "disagrees_with": []
+    },
+    {
+      "id": "n_03",
+      "agent_id": "director",
+      "beat_id": 14,
+      "anchored_to_drop": null,
+      "note_type": "BLOCKING_UNCLEAR",
+      "note_label": "Blocking is unclear",
+      "text": "Director note on chunk 14.",
+      "evidence": "and so it had been for many years",
+      "severity": 2,
+      "agrees_with": [],
+      "disagrees_with": []
+    },
+    {
+      "id": "n_04",
+      "agent_id": "editor",
+      "beat_id": 12,
+      "anchored_to_drop": "de_01",
+      "note_type": "CUT_CANDIDATE",
+      "note_label": "Cut candidate",
+      "text": "Editor note on chunk 12.",
+      "evidence": "and so it had been for many years",
+      "severity": 3,
+      "agrees_with": [
+        "audience",
+        "critic",
+        "director",
+        "psychologist"
+      ],
+      "disagrees_with": [
+        "historian"
+      ]
+    },
+    {
+      "id": "n_05",
+      "agent_id": "editor",
+      "beat_id": 16,
+      "anchored_to_drop": "de_02",
+      "note_type": "MOVE_EARLIER",
+      "note_label": "Move earlier",
+      "text": "Editor note on chunk 16.",
+      "evidence": "and so it had been for many years",
+      "severity": 3,
+      "agrees_with": [
+        "audience",
+        "critic",
+        "director",
+        "psychologist"
+      ],
+      "disagrees_with": [
+        "historian"
+      ]
+    },
+    {
+      "id": "n_06",
+      "agent_id": "editor",
+      "beat_id": 20,
+      "anchored_to_drop": "de_04",
+      "note_type": "SCENE_OVERLONG",
+      "note_label": "Scene runs long",
+      "text": "Editor note on chunk 20.",
+      "evidence": "and so it had been for many years",
+      "severity": 4,
+      "agrees_with": [
+        "audience"
+      ],
+      "disagrees_with": []
+    },
+    {
+      "id": "n_07",
+      "agent_id": "critic",
+      "beat_id": 12,
+      "anchored_to_drop": "de_01",
+      "note_type": "CLICHE",
+      "note_label": "Feels clich\u00e9d",
+      "text": "Critic note on chunk 12.",
+      "evidence": "and so it had been for many years",
+      "severity": 2,
+      "agrees_with": [
+        "audience",
+        "director",
+        "editor",
+        "psychologist"
+      ],
+      "disagrees_with": [
+        "historian"
+      ]
+    },
+    {
+      "id": "n_08",
+      "agent_id": "critic",
+      "beat_id": 16,
+      "anchored_to_drop": "de_02",
+      "note_type": "DERIVATIVE_STRUCTURE",
+      "note_label": "Structure feels derivative",
+      "text": "Critic note on chunk 16.",
+      "evidence": "and so it had been for many years",
+      "severity": 4,
+      "agrees_with": [
+        "audience",
+        "director",
+        "editor",
+        "psychologist"
+      ],
+      "disagrees_with": [
+        "historian"
+      ]
+    },
+    {
+      "id": "n_09",
+      "agent_id": "critic",
+      "beat_id": 23,
+      "anchored_to_drop": null,
+      "note_type": "UNEARNED_TURN",
+      "note_label": "Turn feels unearned",
+      "text": "Critic note on chunk 23.",
+      "evidence": "and so it had been for many years",
+      "severity": 3,
+      "agrees_with": [],
+      "disagrees_with": []
+    },
+    {
+      "id": "n_10",
+      "agent_id": "psychologist",
+      "beat_id": 12,
+      "anchored_to_drop": "de_01",
+      "note_type": "MOTIVATION_UNSUPPORTED",
+      "note_label": "Motivation is unsupported",
+      "text": "Psychologist note on chunk 12.",
+      "evidence": "and so it had been for many years",
+      "severity": 4,
+      "agrees_with": [
+        "audience",
+        "critic",
+        "director",
+        "editor",
+        "historian"
+      ],
+      "disagrees_with": []
+    },
+    {
+      "id": "n_11",
+      "agent_id": "psychologist",
+      "beat_id": 16,
+      "anchored_to_drop": "de_02",
+      "note_type": "EMOTIONAL_SKIP",
+      "note_label": "Emotional step is missing",
+      "text": "Psychologist note on chunk 16.",
+      "evidence": "and so it had been for many years",
+      "severity": 5,
+      "agrees_with": [
+        "audience",
+        "critic",
+        "director",
+        "editor",
+        "historian"
+      ],
+      "disagrees_with": []
+    },
+    {
+      "id": "n_12",
+      "agent_id": "psychologist",
+      "beat_id": 18,
+      "anchored_to_drop": null,
+      "note_type": "INCONSISTENT_BEHAVIOUR",
+      "note_label": "Behaviour is inconsistent",
+      "text": "Psychologist note on chunk 18.",
+      "evidence": "and so it had been for many years",
+      "severity": 5,
+      "agrees_with": [],
+      "disagrees_with": []
+    },
+    {
+      "id": "n_13",
+      "agent_id": "historian",
+      "beat_id": 12,
+      "anchored_to_drop": "de_01",
+      "note_type": "PERIOD_INCONSISTENT",
+      "note_label": "Period detail is inconsistent",
+      "text": "Historian note on chunk 12.",
+      "evidence": "and so it had been for many years",
+      "severity": 5,
+      "agrees_with": [
+        "audience",
+        "director",
+        "psychologist"
+      ],
+      "disagrees_with": [
+        "critic",
+        "editor"
+      ]
+    },
+    {
+      "id": "n_14",
+      "agent_id": "historian",
+      "beat_id": 16,
+      "anchored_to_drop": "de_02",
+      "note_type": "CULTURAL_MISFIT",
+      "note_label": "Cultural detail does not fit",
+      "text": "Historian note on chunk 16.",
+      "evidence": "and so it had been for many years",
+      "severity": 2,
+      "agrees_with": [
+        "audience",
+        "director",
+        "psychologist"
+      ],
+      "disagrees_with": [
+        "critic",
+        "editor"
+      ]
+    },
+    {
+      "id": "n_15",
+      "agent_id": "historian",
+      "beat_id": 2,
+      "anchored_to_drop": null,
+      "note_type": "REGISTER_WRONG",
+      "note_label": "Register feels wrong",
+      "text": "Historian note on chunk 2.",
+      "evidence": "and so it had been for many years",
+      "severity": 3,
+      "agrees_with": [],
+      "disagrees_with": []
+    }
+  ],
+  "room_synthesis": {
+    "consensus": [],
+    "conflict": [],
+    "recommended_fix": "plausible-recommended-fix-620",
+    "predicted_seats_saved": 19
+  },
   "summary": {
     "retained_pct": 0.5,
     "seats_total": 30,

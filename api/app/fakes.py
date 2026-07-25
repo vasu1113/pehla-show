@@ -38,6 +38,8 @@ class FakeLLM:
             return schema.model_validate(self._beat_drafts(prompt, rng))
         if schema is models.ScoredBeat:
             return schema.model_validate(self._scored_beat(rng, prompt))
+        if schema.__name__ == "ExpertNoteDraftList":
+            return schema.model_validate(self._expert_notes(prompt, rng))
         return schema.model_validate(self._model_values(schema, rng))
 
     def _beat_drafts(self, prompt: str, rng: random.Random) -> dict[str, object]:
@@ -118,6 +120,52 @@ class FakeLLM:
             "reason_code": beat_rng.choice(models.REFILL_CODES),
             "evidence": "A fresh reveal sharpens the central question.",
         }
+
+    @staticmethod
+    def _expert_notes(prompt: str, rng: random.Random) -> dict[str, object]:
+        """Notes clustered on the beats where people actually left.
+
+        The expert prompt tells each critic to prefer beats with drop events.
+        A fake that scatters notes at random ignores that instruction, so no
+        two critics land on the same beat, nothing agrees, nothing conflicts,
+        and A7 synthesises an empty room — which would misrepresent the
+        product to whoever builds screens against this fixture.
+        """
+        # Match the explicit "YOU ARE THE X" header, not a loose substring
+        # scan: several lenses name each other in their briefs (the Historian
+        # is told the Editor will want to cut the texture she defends), so
+        # substring matching silently files one critic's notes under another
+        # agent, and A6 then drops all of them for using the wrong note types.
+        header = re.search(r"YOU ARE THE ([A-Z]+)", prompt)
+        agent = (
+            models.AgentId(header.group(1).lower())
+            if header and header.group(1).lower() in {a.value for a in models.AgentId}
+            else models.AgentId.editor
+        )
+        allowed = models.NOTE_TYPES_BY_AGENT[agent]
+
+        # Pull the drop-event beats straight out of the digest the prompt
+        # already carries: "[de_01] beat=9 lost=5 ...".
+        hot = [int(m) for m in re.findall(r"\bbeat=(\d+)", prompt)]
+        known = [int(m) for m in re.findall(r"^\[(\d+)\]", prompt, re.MULTILINE)]
+        pool = hot or known or [0]
+
+        notes: list[dict[str, object]] = []
+        for i in range(3):
+            # Mostly a contested beat, occasionally somewhere else — enough
+            # overlap between critics to produce real agreement and conflict.
+            beat_id = pool[i % len(pool)] if i < 2 else rng.choice(known or pool)
+            notes.append(
+                {
+                    "beat_id": beat_id,
+                    "note_type": allowed[i % len(allowed)].value,
+                    "text": f"{agent.value.title()} note on chunk {beat_id}.",
+                    "evidence": "and so it had been for many years",
+                    "severity": rng.randint(2, 5),
+                    "anchored_to_drop": None,
+                }
+            )
+        return {"notes": notes}
 
     @staticmethod
     def _current_chunk(prompt: str) -> str:
