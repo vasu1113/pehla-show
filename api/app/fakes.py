@@ -40,6 +40,8 @@ class FakeLLM:
             return schema.model_validate(self._scored_beat(rng, prompt))
         if schema.__name__ == "ExpertNoteDraftList":
             return schema.model_validate(self._expert_notes(prompt, rng))
+        if schema.__name__ == "BeatOrder":
+            return schema.model_validate(self._beat_order(prompt, rng))
         return schema.model_validate(self._model_values(schema, rng))
 
     def _beat_drafts(self, prompt: str, rng: random.Random) -> dict[str, object]:
@@ -120,6 +122,29 @@ class FakeLLM:
             "reason_code": beat_rng.choice(models.REFILL_CODES),
             "evidence": "A fresh reveal sharpens the central question.",
         }
+
+    @staticmethod
+    def _beat_order(prompt: str, rng: random.Random) -> dict[str, object]:
+        """One beat moved — the single edit A8 will actually accept.
+
+        The generic filler produced a two-element list, which A8 correctly
+        rejected as a wholesale rewrite. That is the validator working, but it
+        also meant the demo's headline moment — apply the fix, watch the room
+        stay fuller — could not be exercised on the fake at all.
+        """
+        ids = [int(m) for m in re.findall(r"^\[(\d+)\]", prompt, re.MULTILINE)]
+        if len(ids) < 3:
+            return {"order": ids}
+
+        # Honour "move the X at N to position M" when the fix names them,
+        # so the scripted demo does what it says on the tin.
+        numbers = [int(n) for n in re.findall(r"\b(\d+)\b", prompt.split("THE CHANGE")[-1])]
+        source = next((n for n in numbers if n in ids), rng.choice(ids[2:]))
+        target = 2 if len(numbers) < 2 else max(0, min(len(ids) - 1, numbers[-1] - 1))
+
+        order = [i for i in ids if i != source]
+        order.insert(min(target, len(order)), source)
+        return {"order": order}
 
     @staticmethod
     def _expert_notes(prompt: str, rng: random.Random) -> dict[str, object]:
