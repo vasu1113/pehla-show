@@ -1,70 +1,57 @@
-import { useState, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FilmStrip } from './film/FilmStrip';
-import { ScriptPane } from './components/ScriptPane';
 import { AudienceLayer } from './audience/AudienceLayer';
 import { CriticBoxes } from './critics/CriticsBalcony';
-import { FILM_CHUNKS, buildTimeline, chunkAtTime } from './film/filmData';
+import { FILM_CHUNKS, buildTimeline, VERDICT_SECONDS } from './film/filmData';
 import { PlaybackBar } from './components/PlaybackBar';
-import { useClock } from './clock/useClock';
-import { formatTime } from './clock/format';
+import { clock, useClock } from './clock/useClock';
+import { FrontDoor } from './components/FrontDoor/FrontDoor';
+import { EntryTheatre } from './components/EntryTheatre/EntryTheatre';
+import { PostScreen } from './components/PostScreen/PostScreen';
 import './App.css';
 
+const ENTRY_SECONDS = 18;
+
 export default function App() {
-  // Bumping this remounts the audience layer, replaying the arrivals.
-  const [arrivalKey, setArrivalKey] = useState(0);
-  const { currentSeconds, duration, speed, isPlaying } = useClock();
+  const [phase, setPhase] = useState('intro');
+  const [audienceKey, setAudienceKey] = useState(0);
+  const { currentSeconds, duration, isPlaying } = useClock();
+  const { total } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
 
-  const { timed } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
-  const { index, chunk } = chunkAtTime(timed, currentSeconds);
+  const enterTheatre = useCallback(() => {
+    clock.pause();
+    clock.setDuration(ENTRY_SECONDS);
+    clock.rewind();
+    setPhase('entry');
+    clock.play();
+  }, []);
 
+  const startFilm = useCallback(() => {
+    clock.pause();
+    clock.setDuration(total + VERDICT_SECONDS);
+    clock.rewind();
+    setPhase('screening');
+    setAudienceKey((key) => key + 1);
+    clock.play();
+  }, [total]);
+
+  useEffect(() => {
+    if (phase === 'entry' && !isPlaying && currentSeconds >= duration) startFilm();
+    if (phase === 'screening' && !isPlaying && currentSeconds >= duration) setPhase('review');
+  }, [currentSeconds, duration, isPlaying, phase, startFilm]);
+
+  if (phase === 'intro') return <FrontDoor onStart={enterTheatre} />;
+  if (phase === 'entry') return <EntryTheatre />;
+  if (phase === 'review') return <PostScreen />;
   return (
-    <div className="show">
-      <header className="show-header">
-        <span className="sh-title">PEHLA SHOW</span>
-        <span className="sh-sub">the screen · track b</span>
-      </header>
-
-      <div className="show-body">
-        {/* Left column — the script (B3), about a third. */}
-        <ScriptPane />
-
-        {/* Right column — the cinema: screen (B5) on top, audience below. */}
-        <div className="show-right">
-          <div className="screen-wrap">
-            <FilmStrip />
-          </div>
-
-          {/* The house — an opera-house horseshoe: the clueless crowd in the
-              centre stalls, critics in boxes climbing the side walls (the live
-              A/B). NX1/NX2 audience is a Track-B prototype; Track A's Theatre.jsx
-              stays untouched (reconcile at B8). */}
-          <div className="house">
-            <CriticBoxes side="left" />
-            <AudienceLayer key={arrivalKey} />
-            <CriticBoxes side="right" />
-          </div>
-
-          <div className="caption">
-            <span>the screen + 30 listeners</span>
-            <button className="ghost-btn" onClick={() => setArrivalKey((k) => k + 1)}>
-              replay arrivals
-            </button>
-          </div>
-        </div>
+    <main className="screening-view">
+      <div className="screening-film"><FilmStrip /></div>
+      <div className="screening-house">
+        <CriticBoxes side="left" silent />
+        <AudienceLayer key={audienceKey} entered />
+        <CriticBoxes side="right" silent />
       </div>
-
-      {/* An independent reader of THE CLOCK, reading the SAME timeline the
-          screen and script do — a live cross-check that nothing drifts. */}
-      <div className="clock-readout">
-        <span className="cr-item">CLOCK <b>{currentSeconds.toFixed(2)}s</b></span>
-        <span className="cr-item">{formatTime(currentSeconds)} / {formatTime(duration)}</span>
-        <span className="cr-item">
-          CHUNK <b>{chunk ? `${String(index + 1).padStart(2, '0')} · ${chunk.type}` : '—'}</b>
-        </span>
-        <span className="cr-item">{isPlaying ? 'PLAYING' : 'PAUSED'} · {speed}&times;</span>
-      </div>
-
-      <PlaybackBar />
-    </div>
+      {phase === 'screening' && currentSeconds >= 4 && <PlaybackBar />}
+    </main>
   );
 }

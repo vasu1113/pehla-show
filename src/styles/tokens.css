@@ -1,0 +1,10 @@
+:root {
+  --ink: #0F0E0C;
+  --ink-lift: #1A1815;
+  --bone: #EDE8DF;
+  --bone-dim: #8C8779;
+  --bone-faint: #46433C;
+  --beam: #FFF6E0;
+  --alert: #C4553D;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}

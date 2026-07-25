@@ -1,0 +1,178 @@
+.notes-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  background: var(--ink);
+}
+
+.notes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--bone-faint);
+}
+
+.notes-head-label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+}
+
+.notes-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ── hero number tile ───────────────────────────────────────── */
+.notes-tile {
+  border: 1px solid var(--bone-faint);
+  border-radius: 2px;
+  padding: 14px 12px;
+  background: var(--ink-lift);
+}
+
+.notes-tile--hero {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notes-hero-val {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 28px;
+  line-height: 1.15;
+  color: var(--bone);
+  font-variant-numeric: tabular-nums;
+}
+
+.notes-hero-pct {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--bone-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── section blocks ─────────────────────────────────────────── */
+.notes-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notes-label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+}
+
+.notes-body {
+  margin: 0;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--bone);
+}
+
+/* ── loss list ──────────────────────────────────────────────── */
+.notes-losses {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notes-loss {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--bone);
+  font-variant-numeric: tabular-nums;
+}
+
+.notes-loss-time {
+  color: var(--bone-dim);
+}
+
+.notes-loss-sep {
+  color: var(--bone-dim);
+}
+
+/* ONLY place --alert is used in this component */
+.notes-loss-count {
+  color: var(--alert);
+  font-variant-numeric: tabular-nums;
+}
+
+.notes-loss-reason {
+  color: var(--bone);
+}
+
+/* ── one change row ─────────────────────────────────────────── */
+.notes-fix-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.notes-seats-saved {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  color: var(--bone-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── buttons ────────────────────────────────────────────────── */
+.notes-btn {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: var(--bone);
+  background: var(--ink-lift);
+  border: 1px solid var(--bone-faint);
+  border-radius: 2px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.notes-btn:hover:not(:disabled) {
+  border-color: var(--bone-dim);
+  color: var(--bone);
+}
+
+.notes-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  color: var(--bone-dim);
+}
+
+.notes-btn--copy {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+}
+
+.notes-btn--apply {
+  flex-shrink: 0;
+}

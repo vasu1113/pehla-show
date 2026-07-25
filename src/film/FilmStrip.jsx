@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { clock, useClock } from '../clock/useClock';
-import { FILM_CHUNKS, buildTimeline, chunkAtTime } from './filmData';
+import { FILM_CHUNKS, buildTimeline, chunkAtTime, VERDICT_SECONDS } from './filmData';
 import './FilmStrip.css';
 
 // Cross-fade length when the clock crosses into a new chunk.
@@ -52,10 +52,20 @@ export function FilmStrip() {
 
   const { timed, total } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
 
-  // Keep the clock's length in step with the film's length.
+  // Clock runs the film's length PLUS the verdict tail (B6).
   useEffect(() => {
-    if (total > 0) clock.setDuration(total);
+    if (total > 0) clock.setDuration(total + VERDICT_SECONDS);
   }, [total]);
+
+  // Once the film ends, the screen fades to dark and holds for the verdict.
+  if (timed.length > 0 && currentSeconds >= total) {
+    return (
+      <div className="film-screen film-screen--ended">
+        <div className="film-grain" />
+        <div className="film-vignette" />
+      </div>
+    );
+  }
 
   if (timed.length === 0) {
     return (
@@ -83,7 +93,7 @@ export function FilmStrip() {
   const brightness = (0.8 + 0.35 * chunk.tension).toFixed(3);
 
   return (
-    <div className="film-screen" style={{ filter: `brightness(${brightness})` }}>
+    <div className="film-screen" style={{ filter: `brightness(${brightness})`, opacity: Math.min(1, currentSeconds / 0.8) }}>
       <Still chunk={chunk} transform={kenBurns(index, progress)} />
 
       {prev && (

@@ -56,9 +56,20 @@ const NOTES = [
     text: 'Scene 14 ends on a refusal. Bold — but no hook for next week.' },
 ];
 
+// The critics' FINAL reviews, in the verdict (B6). Longer, analytical, and two
+// of them (id 1 airs it / id 2 loses the room) visibly disagree on the verdict.
+const FINAL_REVIEWS = [
+  { critic: 0, text: 'Spine is sound, but act two spends the tension act one banked. A rewrite, not a reshoot.' },
+  { critic: 1, text: 'It holds. Trim scene 9 and the back half, and this airs.' },
+  { critic: 2, text: 'Too quiet for the Friday slot. It loses the room by the first break.' },
+  { critic: 3, text: 'Meena is real; everyone around her is a function. Give the landlord one human beat.' },
+  { critic: 4, text: 'The communal-debt read is the whole show. Lean into it and you have something.' },
+];
+
 export function buildCriticSchedule(timed) {
   const events = [];
   let uid = 0;
+  const total = timed.length ? timed[timed.length - 1].end : 0;
 
   // Initial opinions, staggered near the start (first one starts before 0 so
   // it is already visible when the clock sits paused at 0).
@@ -75,6 +86,12 @@ export function buildCriticSchedule(timed) {
     if (end > start + 0.8) {
       events.push({ id: uid++, criticId: n.critic, chunkIndex: n.chunk, text: n.text, start, end });
     }
+  });
+
+  // Final reviews, staggered on the verdict tail (critics speak at ~+4s).
+  FINAL_REVIEWS.forEach((n, i) => {
+    const start = total + 3.9 + i * 0.55;
+    events.push({ id: uid++, criticId: n.critic, text: n.text, start, end: start + 2.2, final: true });
   });
 
   return events;

@@ -27,6 +27,10 @@
   will-change: left, top, opacity;
 }
 
+/* Entry has already happened in the dedicated foyer sequence. */
+.seat-slot.is-seated { animation: none; }
+.seat-slot.is-seated .fig-wrap { animation: none; }
+
 @keyframes arrive {
   0% { left: var(--sl); top: var(--st); opacity: 0; }
   15% { opacity: 1; }
@@ -136,9 +140,71 @@
   border-top-color: var(--bone);
 }
 
+/* ── B6 verdict poses ─────────────────────────────────────────── */
+.verdict--applause .fig-wrap { animation: v-clap 0.42s ease-in-out infinite; }
+.verdict--nod .fig-wrap { animation: v-nod 1.1s ease-in-out infinite; }
+.verdict--headshake .fig-wrap { animation: v-shake 0.6s ease-in-out infinite; }
+.verdict--popcorn .fig-wrap { animation: v-shake 0.34s ease-in-out infinite; } /* agitated */
+.verdict--stands .fig-wrap { transform: translateY(-11px); } /* stood up */
+.verdict--left { opacity: 0; } /* empty seat — the absence is the review */
+
+@keyframes v-clap { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes v-nod { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(2.5px); } }
+@keyframes v-shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
+
+/* the verdict speech bubbles */
+.verdict-slot { position: absolute; pointer-events: none; }
+
+.verdict-bubble {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 140px;
+  padding: 5px 9px;
+  border-radius: 10px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+/* warm approvals vs cold pans — kept in the palette, no red */
+.verdict-bubble--applause { background: var(--bone); color: var(--ink); }
+.verdict-bubble--nod { background: var(--bone-dim); color: var(--ink); }
+.verdict-bubble--headshake { background: var(--ink-lift); color: var(--bone); border: 1px solid var(--bone-dim); }
+.verdict-bubble--popcorn { background: var(--ink-lift); color: var(--bone); border: 1px solid var(--bone-dim); }
+
+.verdict-bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: currentColor;
+  opacity: 0.5;
+}
+
+/* the popcorn throw */
+.popcorn-arc { position: absolute; pointer-events: none; z-index: 260; }
+.kernel {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--beam);
+  box-shadow: 0 0 2px rgba(255, 246, 224, 0.6);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .seat-slot { animation: none; }
   .expectation-bubble { animation: none; opacity: 0; } /* no flashing bubbles */
+  .verdict--applause .fig-wrap,
+  .verdict--nod .fig-wrap,
+  .verdict--headshake .fig-wrap,
+  .verdict--popcorn .fig-wrap { animation: none; }
 }
 
 /* ── The walkout (Track A's exit, on Track B's figures) ──────────────────
