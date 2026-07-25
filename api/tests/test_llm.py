@@ -64,6 +64,8 @@ def test_scored_beat_sign_coherence() -> None:
         assert got.reason_code in DRAIN_CODES + REFILL_CODES, got.reason_code
         assert -3 <= got.delta <= 3
         assert got.evidence.strip(), "evidence must never be empty"
+        assert got.reaction_line.strip(), "reaction line must never be empty"
+        assert len(got.reaction_line) <= 120
 
         if got.reason_code in DRAIN_CODES:
             drains += 1

@@ -146,4 +146,12 @@ def test_score_persona_replaces_an_invalid_reason_code() -> None:
         "delta": 0,
         "reason_code": "PACING_FLAT",
         "evidence": "",
+        "reaction_line": "",
     }
+
+
+def test_score_persona_returns_a_short_grounded_reaction_line() -> None:
+    delta = _run(score_persona(_beats(1), _persona(), FakeLLM()))[0]
+
+    assert delta.reaction_line.strip()
+    assert len(delta.reaction_line) <= 120

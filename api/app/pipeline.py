@@ -153,6 +153,7 @@ async def _screen(
 ) -> tuple[
     list[models.Persona],
     list[models.AudienceMember],
+    list[models.AudienceReaction],
     list[models.DropEvent],
     list[models.Warning],
 ]:
@@ -249,8 +250,9 @@ async def _screen(
     kept_ids = {persona.id for persona in kept}
     kept_cast = [member for member in cast if member[0].id in kept_ids]
     audience = a3_simulate.simulate_population(deltas, kept_cast, beats)
+    reactions = a3_simulate.build_reactions(deltas, beats)
     drops = a4_cliffs.detect_cliffs(audience, beats)
-    return kept, audience, drops, warnings
+    return kept, audience, reactions, drops, warnings
 
 
 async def analyse(
@@ -305,7 +307,7 @@ async def analyse(
 
     try:
         _progress(run_id, models.Stage.SEATING_AUDIENCE, 25)
-        kept, audience, drops, warnings = await _screen(
+        kept, audience, reactions, drops, warnings = await _screen(
             run_id,
             beats,
             personas,
@@ -346,6 +348,7 @@ async def analyse(
         update={
             "cohorts": cohorts,
             "audience": audience,
+            "audience_reactions": reactions,
             "drop_events": drops,
             "summary": summary,
             "warnings": warnings,
@@ -460,7 +463,7 @@ async def apply_recommended_fix(
 
         _progress(run_id, models.Stage.SEATING_AUDIENCE, 25)
         personas = _load_personas([cohort.id for cohort in parent.cohorts])
-        kept, audience, drops, warnings = await _screen(
+        kept, audience, reactions, drops, warnings = await _screen(
             run_id,
             beats,
             personas,
@@ -532,6 +535,7 @@ async def apply_recommended_fix(
             "status": "ready",
             "cohorts": cohorts,
             "audience": audience,
+            "audience_reactions": reactions,
             "drop_events": drops,
             "notes": notes,
             "room_synthesis": synthesis,

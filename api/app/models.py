@@ -220,6 +220,9 @@ class AttentionDelta(BaseModel):
     delta: int = Field(ge=-3, le=3)
     reason_code: str
     evidence: str
+    #: A short, in-the-moment response in this persona's voice. It is created
+    #: alongside the score, from the same blind context and evidence.
+    reaction_line: str = Field(default="", max_length=120)
 
 
 class ScoredBeat(BaseModel):
@@ -228,6 +231,25 @@ class ScoredBeat(BaseModel):
     delta: int = Field(ge=-3, le=3)
     reason_code: str
     evidence: str
+    reaction_line: str = Field(min_length=1, max_length=120)
+
+
+class AudienceReaction(BaseModel):
+    """One grounded, time-bound response from a listener cohort.
+
+    Five seats share a selected persona's score, so this deliberately belongs
+    to the cohort rather than pretending every seat independently wrote a new
+    sentence. The UI may display it beside any still-seated member of that
+    cohort at the anchored beat.
+    """
+
+    cohort: str
+    beat_id: int
+    timestamp: int = Field(ge=0)
+    delta: int = Field(ge=-3, le=3)
+    reason_code: str
+    evidence: str
+    text: str = Field(min_length=1, max_length=120)
 
 
 class AudienceMember(BaseModel):
@@ -381,6 +403,7 @@ class Run(BaseModel):
     beats: list[Beat] = Field(default_factory=list)
     cohorts: list[Cohort] = Field(default_factory=list)
     audience: list[AudienceMember] = Field(default_factory=list)
+    audience_reactions: list[AudienceReaction] = Field(default_factory=list)
     drop_events: list[DropEvent] = Field(default_factory=list)
     agents: list[AgentMeta] = Field(default_factory=list)
     notes: list[Note] = Field(default_factory=list)

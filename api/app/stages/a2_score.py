@@ -12,6 +12,7 @@ def _neutral_delta(beat_id: int) -> AttentionDelta:
         delta=0,
         reason_code="PACING_FLAT",
         evidence="",
+        reaction_line="",
     )
 
 
@@ -47,6 +48,7 @@ async def score_persona_verbose(
                 delta=scored.delta,
                 reason_code=scored.reason_code,
                 evidence=scored.evidence,
+                reaction_line=scored.reaction_line,
             )
         )
 

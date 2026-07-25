@@ -10,6 +10,7 @@ import pytest
 from app import cache, config, store, store_supabase
 from app.models import (
     AgentMeta,
+    AudienceReaction,
     AudienceMember,
     Audio,
     Beat,
@@ -151,6 +152,7 @@ class FakeClient:
             "scripts": [],
             "runs": [],
             "audience": [],
+            "audience_reactions": [],
             "beat_cache": [],
         }
         self.calls: list[tuple[str, str]] = []
@@ -223,6 +225,17 @@ def _run(run_id: str = "run_pinned_01") -> Run:
         )
         for seat in range(30)
     ]
+    reactions = [
+        AudienceReaction(
+            cohort="commuter",
+            beat_id=1,
+            timestamp=0,
+            delta=-2,
+            reason_code="PACING_FLAT",
+            evidence="A door opens.",
+            text="I need this to move.",
+        )
+    ]
     return Run(
         run_id=run_id,
         status="ready",
@@ -244,6 +257,7 @@ def _run(run_id: str = "run_pinned_01") -> Run:
             )
         ],
         audience=audience,
+        audience_reactions=reactions,
         drop_events=[
             DropEvent(
                 id="drop_01",
@@ -367,6 +381,28 @@ def test_save_replaces_thirty_audience_rows(
     assert {row["seat"] for row in client.tables["audience"]} == set(range(30))
     assert all(row["sensitivity"] == {} for row in client.tables["audience"])
     assert all(row["replenish"] == {} for row in client.tables["audience"])
+
+
+def test_save_persists_grounded_audience_reactions(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client = FakeClient()
+    _use_supabase(monkeypatch, client)
+
+    store.save(_run(), raw_text="A door opens.", content_hash="full-digest")
+
+    assert client.tables["audience_reactions"] == [
+        {
+            "run_id": "run_pinned_01",
+            "persona_id": "commuter",
+            "beat_id": 1,
+            "timestamp": 0,
+            "delta": -2,
+            "reason_code": "PACING_FLAT",
+            "evidence": "A door opens.",
+            "reaction_line": "I need this to move.",
+        }
+    ]
 
 
 def test_pin_then_find_pinned_resolves_run(

@@ -87,11 +87,11 @@ const Figures = memo(function Figures({ people, currentSeconds, total, entered, 
  * NX2 — live thoughts during the film. Only from people still in the room:
  * a seat that emptied ninety seconds ago has no opinion about this chunk.
  */
-function LiveThoughts({ people, currentSeconds, chunks }) {
+function LiveThoughts({ people, currentSeconds, chunks, reactions }) {
   const schedule = useMemo(() => {
     const { timed } = buildTimeline(chunks);
-    return buildThoughtSchedule(timed, people.length);
-  }, [chunks, people.length]);
+    return buildThoughtSchedule(timed, reactions);
+  }, [chunks, reactions]);
 
   const active = activeThoughts(schedule, currentSeconds).slice(0, 1);
   if (active.length === 0) return null;
@@ -99,10 +99,10 @@ function LiveThoughts({ people, currentSeconds, chunks }) {
   return (
     <>
       {active.map(({ event, opacity }) => {
-        const preferred = people[event.personId];
-        const p = stateFor(preferred.id, preferred.leftAtSec, currentSeconds).state === 'here'
-          ? preferred
-          : people.find((candidate) => stateFor(candidate.id, candidate.leftAtSec, currentSeconds).state === 'here');
+        const p = people.find(
+          (candidate) => candidate.type === event.cohort
+            && stateFor(candidate.id, candidate.leftAtSec, currentSeconds).state === 'here',
+        );
         if (!p) return null;
         return (
           <div
@@ -126,13 +126,13 @@ function LiveThoughts({ people, currentSeconds, chunks }) {
 }
 
 /** B6 — the staggered verdict bubbles (max six), from the people who STAYED. */
-function VerdictBubbles({ people, total }) {
+function VerdictBubbles({ people, total, reactions }) {
   const { currentSeconds } = useClock();
   const stayers = useMemo(
     () => people.filter((p) => p.leftAtSec == null || p.leftAtSec >= total),
     [people, total],
   );
-  const schedule = useMemo(() => buildVerdictBubbles(stayers), [stayers]);
+  const schedule = useMemo(() => buildVerdictBubbles(stayers, reactions), [stayers, reactions]);
   const vt = currentSeconds - total;
   if (vt < 0) return null;
 
@@ -178,7 +178,6 @@ function Popcorn({ people, timed, total, currentSeconds }) {
   const throwers = extreme
     ? eligible.filter((p) => (p.id + peakIndex * 3) % 4 === 0).slice(0, 3)
     : eligible.filter((p) => p.verdict === 'popcorn' && (p.leftAtSec == null || p.leftAtSec >= total));
-  const speaker = throwers[0];
   return (
     <>
       {throwers.map((p) => (
@@ -198,14 +197,6 @@ function Popcorn({ people, timed, total, currentSeconds }) {
           })}
         </div>
       ))}
-      {extreme && speaker && (
-        <div
-          className="popcorn-thought"
-          style={{ left: `${speaker.fl}%`, top: `${speaker.ft}%`, transform: `translate(-50%, -50%) scale(${speaker.scale})`, opacity: Math.min(1, prog * 2, (1 - prog) * 2.3) }}
-        >
-          <span>That reveal landed.</span>
-        </div>
-      )}
     </>
   );
 }
@@ -248,7 +239,10 @@ export function AudienceLayer({ entered = false }) {
   const { people } = useRunAudience(duration);
   const chunks = useMemo(() => filmChunksForRun(run), [run]);
   const { timed, total } = useMemo(() => buildTimeline(chunks), [chunks]);
-  const criticSchedule = useMemo(() => buildCriticSchedule(timed), [timed]);
+  const criticSchedule = useMemo(
+    () => buildCriticSchedule(timed, run?.notes ?? []),
+    [timed, run?.notes],
+  );
   const inVerdict = currentSeconds >= total;
   const peakReaction = timed.some((chunk) => chunk.tension >= 0.9 && currentSeconds >= chunk.start + 0.45 && currentSeconds <= chunk.start + 2.15);
   const criticSpeaking = activeCriticNotes(criticSchedule, currentSeconds).length > 0;
@@ -263,8 +257,15 @@ export function AudienceLayer({ entered = false }) {
     <div className="audience">
       <div className={`audience-floor${hasHighlight ? ' has-highlight' : ''}`}>
         <Figures people={people} currentSeconds={currentSeconds} total={total} entered={entered} highlight={highlight} />
-        {!inVerdict && !peakReaction && !criticSpeaking && <LiveThoughts people={people} currentSeconds={currentSeconds} chunks={chunks} />}
-        {inVerdict && <VerdictBubbles people={people} total={total} />}
+        {!inVerdict && !peakReaction && !criticSpeaking && (
+          <LiveThoughts
+            people={people}
+            currentSeconds={currentSeconds}
+            chunks={chunks}
+            reactions={run?.audience_reactions ?? []}
+          />
+        )}
+        {inVerdict && <VerdictBubbles people={people} total={total} reactions={run?.audience_reactions ?? []} />}
         {!criticSpeaking && <Popcorn people={people} timed={timed} total={total} currentSeconds={currentSeconds} />}
         <AngryWalkoutPopcorn people={people} currentSeconds={currentSeconds} />
       </div>

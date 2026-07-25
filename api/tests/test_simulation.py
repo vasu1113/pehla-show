@@ -10,7 +10,7 @@ from app.models import (
     Persona,
 )
 from app.stages.a0_cast import spawn_audience
-from app.stages.a3_simulate import simulate_population
+from app.stages.a3_simulate import build_reactions, simulate_population
 from app.stages.a4_cliffs import detect_cliffs
 
 
@@ -61,6 +61,7 @@ def _deltas() -> dict[str, list[AttentionDelta]]:
                     "PACING_FLAT" if cohort == "commuter" else "TENSION_SPIKE"
                 ),
                 evidence=beat.text_span,
+                reaction_line=f"Reaction to beat {beat.id}.",
             )
             for beat in _beats()
         ]
@@ -104,6 +105,14 @@ def test_every_member_has_one_trace_entry_per_beat_plus_start() -> None:
         for member in audience
     )
 
+
+def test_reactions_are_sparse_and_anchored_to_real_scored_beats() -> None:
+    reactions = build_reactions(_deltas(), _beats())
+
+    assert reactions
+    assert {reaction.beat_id for reaction in reactions} <= {beat.id for beat in _beats()}
+    assert all(abs(reaction.delta) >= 2 for reaction in reactions)
+    assert all(reaction.text.startswith("Reaction to beat") for reaction in reactions)
 
 def test_population_has_exactly_thirty_unique_numbered_seats() -> None:
     audience = _simulated_audience()

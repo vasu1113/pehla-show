@@ -90,6 +90,20 @@
  */
 
 /**
+ * A real, short cohort response generated during the blinded score. The UI
+ * reveals it at its beat; it does not invent copy or stream a new model call.
+ *
+ * @typedef {Object} AudienceReaction
+ * @property {string} cohort
+ * @property {number} beat_id
+ * @property {number} timestamp
+ * @property {number} delta
+ * @property {ReasonCode} reason_code
+ * @property {string} evidence
+ * @property {string} text
+ */
+
+/**
  * @typedef {Object} DropEvent
  * @property {string} id
  * @property {number} timestamp
@@ -165,6 +179,7 @@
  * @property {Beat[]} beats
  * @property {Cohort[]} cohorts
  * @property {AudienceMember[]} audience   // exactly 30
+ * @property {AudienceReaction[]} audience_reactions
  * @property {DropEvent[]} drop_events
  * @property {Agent[]} agents
  * @property {Note[]} notes

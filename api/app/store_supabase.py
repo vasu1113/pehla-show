@@ -116,6 +116,34 @@ def save(
                     for member in run.audience
                 ]
             ).execute()
+
+        try:
+            client.table("audience_reactions").delete().eq("run_id", run.run_id).execute()
+            if run.audience_reactions:
+                client.table("audience_reactions").insert(
+                    [
+                        {
+                            "run_id": run.run_id,
+                            "persona_id": reaction.cohort,
+                            "beat_id": reaction.beat_id,
+                            "timestamp": reaction.timestamp,
+                            "delta": reaction.delta,
+                            "reason_code": reaction.reason_code,
+                            "evidence": reaction.evidence,
+                            "reaction_line": reaction.text,
+                        }
+                        for reaction in run.audience_reactions
+                    ]
+                ).execute()
+        except Exception:
+            # result_json remains the Run authority, so an older database may
+            # still serve reactions while this optional analytics table waits
+            # for its migration to be applied.
+            logger.warning(
+                "Could not index audience reactions for run %s; "
+                "they remain stored in result_json",
+                run.run_id,
+            )
     except Exception:
         logger.exception("Could not save run %s to Supabase", run.run_id)
 

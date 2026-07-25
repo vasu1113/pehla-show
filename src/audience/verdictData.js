@@ -33,11 +33,20 @@ function windowOpacity(vt, start, end) {
  * Only tiers that speak get a bubble (applause / nod / headshake / popcorn);
  * "stands" says nothing and "left" is an empty seat.
  */
-export function buildVerdictBubbles(people) {
-  const speakers = people.filter((p) => p.verdictLine);
-  return speakers.map((p, idx) => {
+export function buildVerdictBubbles(people, reactions = []) {
+  const latestByCohort = new Map();
+  for (const reaction of reactions) {
+    if (!reaction.text) continue;
+    const current = latestByCohort.get(reaction.cohort);
+    if (!current || reaction.beat_id > current.beat_id) latestByCohort.set(reaction.cohort, reaction);
+  }
+  const speakers = people.flatMap((person) => {
+    const reaction = latestByCohort.get(person.type);
+    return reaction ? [{ person, reaction }] : [];
+  });
+  return speakers.map(({ person, reaction }, idx) => {
     const start = VERDICT.bubbles + idx * 0.38; // staggered in waves
-    return { personId: p.id, text: p.verdictLine, start, end: start + 1.9 };
+    return { personId: person.id, text: reaction.text, start, end: start + 1.9 };
   });
 }
 

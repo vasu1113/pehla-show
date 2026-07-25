@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test src/data/runApi.test.js src/film/filmData.test.js src/critics/criticsData.test.js"
+    "test": "node --test src/data/runApi.test.js src/film/filmData.test.js src/critics/criticsData.test.js src/audience/thoughtData.test.js"
   },
   "dependencies": {
     "react": "^18.3.1",

@@ -116,11 +116,13 @@ class FakeLLM:
                 "delta": -magnitude,
                 "reason_code": beat_rng.choice(models.DRAIN_CODES),
                 "evidence": "The beat delays the central question.",
+                "reaction_line": "I keep waiting for the story to start.",
             }
         return {
             "delta": magnitude,
             "reason_code": beat_rng.choice(models.REFILL_CODES),
             "evidence": "A fresh reveal sharpens the central question.",
+            "reaction_line": "Okay, now I need to know more.",
         }
 
     @staticmethod

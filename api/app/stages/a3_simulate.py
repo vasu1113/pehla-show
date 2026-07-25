@@ -41,6 +41,37 @@ def _reason_label(code: str) -> str:
     return _REASON_LABELS.get(code, code.replace("_", " ").title())
 
 
+def build_reactions(
+    deltas: dict[str, list[models.AttentionDelta]],
+    beats: list[models.Beat],
+) -> list[models.AudienceReaction]:
+    """Expose only meaningful, grounded cohort responses for playback.
+
+    The scorer creates one response per selected persona and beat. Keeping
+    only strong attention movements prevents the auditorium becoming a chat
+    stream while preserving the actual model output and its evidence.
+    """
+    beat_by_id = {beat.id: beat for beat in beats}
+    reactions: list[models.AudienceReaction] = []
+    for cohort, cohort_deltas in sorted(deltas.items()):
+        for delta in cohort_deltas:
+            beat = beat_by_id.get(delta.beat_id)
+            if beat is None or abs(delta.delta) < 2 or not delta.reaction_line:
+                continue
+            reactions.append(
+                models.AudienceReaction(
+                    cohort=cohort,
+                    beat_id=beat.id,
+                    timestamp=beat.start_sec,
+                    delta=delta.delta,
+                    reason_code=delta.reason_code,
+                    evidence=delta.evidence,
+                    text=delta.reaction_line,
+                )
+            )
+    return reactions
+
+
 def simulate_population(
     deltas: dict[str, list[models.AttentionDelta]],
     cast: list[tuple[models.Persona, models.Calibration]],

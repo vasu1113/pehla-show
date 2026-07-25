@@ -31,11 +31,12 @@ export function CriticBoxes({ side, silent = false }) {
   const chunks = useMemo(() => filmChunksForRun(run), [run]);
   const schedule = useMemo(() => {
     const { timed } = buildTimeline(chunks);
-    return buildCriticSchedule(timed);
-  }, [chunks]);
+    return buildCriticSchedule(timed, run?.notes ?? []);
+  }, [chunks, run?.notes]);
 
   const active = silent ? [] : activeCriticNotes(schedule, currentSeconds);
   const noteByCritic = new Map(active.map((a) => [a.event.criticId, a]));
+  const agentById = new Map((run?.agents ?? []).map((agent) => [agent.id, agent]));
 
   const critics = CRITICS.filter((c) => c.side === side).sort((a, b) => a.row - b.row);
 
@@ -43,20 +44,22 @@ export function CriticBoxes({ side, silent = false }) {
     <div className={`critic-col critic-col--${side}`}>
       {critics.map((cr) => {
         const note = noteByCritic.get(cr.id);
+        const agent = agentById.get(cr.id);
+        const tag = agent ? `${agent.label} · ${agent.lens}` : cr.id.toUpperCase();
         return (
           <div key={cr.id} className="opera-box">
             <div className="box-interior">
               <CriticFigure />
               <div className="box-rail" />
             </div>
-            <span className="box-tag">{cr.name} · {cr.lens}</span>
+            <span className="box-tag">{tag}</span>
 
             {note && (
               <div
                 className={`critic-note critic-note--${side}`}
                 style={{ opacity: note.opacity }}
               >
-                <span className="cn-who">{cr.name} · {cr.lens}</span>
+                <span className="cn-who">{tag}</span>
                 <span className="cn-text">{note.event.text}</span>
               </div>
             )}

@@ -63,6 +63,11 @@ def test_analyse_returns_a_complete_run(client: TestClient) -> None:
     assert result["status"] == "ready"
     assert result["beats"]
     assert len(result["audience"]) == 30
+    assert result["audience_reactions"]
+    assert all(
+        reaction["text"] and reaction["beat_id"] in {beat["id"] for beat in result["beats"]}
+        for reaction in result["audience_reactions"]
+    )
     assert result["drop_events"]
     models.Run.model_validate(result)
 

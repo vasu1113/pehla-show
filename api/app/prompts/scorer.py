@@ -144,6 +144,11 @@ Then quote the exact phrase from THIS chunk that caused it. Quote it verbatim, \
 word for word, from the chunk above. Do not paraphrase it and do not quote \
 from an earlier chunk.
 
+Finally, write `reaction_line`: this listener's private, spoken-in-the-room
+reaction in 3 to 12 words. It must be natural, specific to THIS listener, and
+faithful to the score and quoted evidence. It must not mention the model,
+writing quality, future events, or information outside the chunks heard so far.
+
 Hold these in mind:
 
 - If nothing in this chunk gives this specific person a reason to keep \

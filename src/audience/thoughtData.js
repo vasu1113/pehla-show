@@ -8,55 +8,26 @@
  * Each thought is a TIME WINDOW. Visibility and fade are pure functions of the
  * clock, so scrubbing to any moment shows exactly the right thoughts — no timers.
  *
- * Reactions are keyed to the chunk's mood (a stand-in for real per-person
- * patience movement, which arrives with Track A/C data later).
+ * Reactions come from the completed Run. They were generated during the blind
+ * audience score, are anchored to a beat and are replayed from the clock.
  */
-
-// What people mutter when the film has them.
-const TENSE = ['Oh no.', 'Do not open it.', 'He is right there.', 'Uff.', 'My heart.'];
-const ENGAGED = ['Now we are talking.', 'Achha, twist.', 'Oho.', 'Finally.', 'Kya scene hai.'];
-const NEUTRAL = ['Hmm.', 'Okay okay.', 'Chalo.', 'Theek hai.'];
-const BORED = ['Get on with it.', 'Kitna slow hai.', 'Checked my phone.', 'Boring yaar.', 'Still nothing.'];
-
-function poolForChunk(chunk, prev) {
-  if (chunk.tension >= 0.85) return TENSE;
-  if (chunk.tension <= 0.3) return BORED;
-  if (prev && chunk.tension > prev.tension + 0.05) return ENGAGED;
-  return NEUTRAL;
-}
 
 /**
- * Build the whole film's thought schedule from the timed chunks. A single
- * readable reaction appears through every beat; the room is never silent, but
- * no two voices compete on screen.
+ * Build a sparse schedule from real cohort reactions. Several cohorts may
+ * react to the same beat; show the strongest one so the room stays readable.
  */
-export function buildThoughtSchedule(timed, peopleCount) {
-  const events = [];
-  let uid = 0;
-  timed.forEach((c, ci) => {
-    const prev = ci > 0 ? timed[ci - 1] : null;
-
-    const pool = poolForChunk(c, prev);
-    const gap = 0.12;
-    const duration = 2.65;
-    let start = c.start + 0.12;
-    let k = 0;
-    while (start < c.end - 0.7) {
-      const end = Math.min(c.end - 0.02, start + duration);
-      if (end > start + 0.6) {
-        events.push({
-          id: uid++,
-          personId: (ci * 7 + k * 11 + 8) % peopleCount,
-          text: pool[(ci * 3 + k) % pool.length],
-          start,
-          end,
-        });
-      }
-      start = end + gap;
-      k += 1;
-    }
+export function buildThoughtSchedule(timed, reactions = []) {
+  return timed.flatMap((chunk, index) => {
+    const candidates = reactions
+      .filter((reaction) => reaction.beat_id === chunk.beatId && reaction.text)
+      .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta) || a.cohort.localeCompare(b.cohort));
+    const reaction = candidates[0];
+    if (!reaction) return [];
+    const start = chunk.start + Math.min(0.5, Math.max(0.12, chunk.duration * 0.2));
+    const end = Math.min(chunk.end - 0.02, start + 2.8);
+    if (end <= start + 0.35) return [];
+    return [{ id: `reaction-${reaction.cohort}-${reaction.beat_id}-${index}`, ...reaction, start, end }];
   });
-  return events;
 }
 
 /** Fade a thought in/out inside its window; 0..1, computed from the clock. */
