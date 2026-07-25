@@ -1,0 +1,99 @@
+/* B1-ish shell: header / two-column body / readout / playback bar.
+   One screen, the page itself never scrolls (only the script pane scrolls). */
+
+.show {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  overflow: hidden;
+}
+
+.show-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--bone-faint);
+}
+
+.sh-title {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 14px;
+  letter-spacing: 0.24em;
+  color: var(--bone);
+}
+
+.sh-sub {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+}
+
+.show-body {
+  min-height: 0; /* children manage their own scroll; page does not grow */
+  display: grid;
+  grid-template-columns: minmax(280px, 34%) 1fr;
+}
+
+.show-right {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+/* The cinema screen. Capped so screen + seats fit one laptop view. */
+.screen-wrap {
+  width: 100%;
+  max-width: 620px;
+}
+
+.caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  max-width: 620px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+}
+
+.clock-readout {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+  padding: 8px 20px;
+  border-top: 1px solid var(--bone-faint);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+}
+
+.cr-item b {
+  color: var(--bone);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.ghost-btn {
+  background: none;
+  border: 1px solid var(--bone-faint);
+  color: var(--bone-faint);
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  cursor: pointer;
+}

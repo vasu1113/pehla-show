@@ -1,0 +1,86 @@
+/* THE LOOK: monospace, warm near-black, off-white. No second colour.
+   Red is reserved for walkout markers elsewhere — never here.
+   Uses the repo's cinema palette (--ink / --bone / etc.). */
+
+.playback-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  background: var(--ink-lift);
+  border-top: 1px solid var(--bone-faint);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--bone);
+  user-select: none;
+}
+
+.pb-btn {
+  background: transparent;
+  border: 1px solid var(--bone-faint);
+  color: var(--bone);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1;
+  padding: 6px 9px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.pb-btn:hover {
+  border-color: var(--bone-dim);
+}
+
+.pb-play {
+  min-width: 40px;
+}
+
+.pb-time {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  color: var(--bone);
+  min-width: 120px;
+  text-align: center;
+}
+
+.pb-scrubber {
+  flex: 1;
+  appearance: none;
+  height: 3px;
+  background: var(--bone-faint);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.pb-scrubber::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bone);
+  cursor: pointer;
+}
+
+.pb-scrubber::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 50%;
+  background: var(--bone);
+  cursor: pointer;
+}
+
+.pb-speeds {
+  display: flex;
+  gap: 4px;
+}
+
+.pb-speed {
+  min-width: 34px;
+}
+
+.pb-speed.is-active {
+  border-color: var(--bone);
+  color: var(--ink);
+  background: var(--bone);
+}
