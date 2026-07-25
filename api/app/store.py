@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from threading import RLock
+from types import ModuleType
 from typing import Any
 
 from app import config
@@ -12,6 +13,12 @@ _runs: dict[str, Run] = {}
 _progress: dict[str, Progress] = {}
 _pinned: dict[tuple[str, str], str] = {}
 _lock = RLock()
+
+
+def _backend() -> ModuleType:
+    from app import store_supabase
+
+    return store_supabase
 
 
 def _read_json(name: str, default: Any) -> Any:
@@ -96,30 +103,42 @@ def _persist_pins() -> None:
 
 
 def save(run: Run) -> None:
+    if config.STORE_BACKEND == "supabase":
+        _backend().save(run)
+        return
     with _lock:
         _runs[run.run_id] = run.model_copy(deep=True)
         _persist_runs()
 
 
 def get(run_id: str) -> Run | None:
+    if config.STORE_BACKEND == "supabase":
+        return _backend().get(run_id)
     with _lock:
         run = _runs.get(run_id)
         return run.model_copy(deep=True) if run is not None else None
 
 
 def set_progress(run_id: str, progress: Progress) -> None:
+    if config.STORE_BACKEND == "supabase":
+        _backend().set_progress(run_id, progress)
+        return
     with _lock:
         _progress[run_id] = progress.model_copy(deep=True)
         _persist_progress()
 
 
 def get_progress(run_id: str) -> Progress | None:
+    if config.STORE_BACKEND == "supabase":
+        return _backend().get_progress(run_id)
     with _lock:
         progress = _progress.get(run_id)
         return progress.model_copy(deep=True) if progress is not None else None
 
 
 def find_pinned(content_hash: str, variant: str = "original") -> Run | None:
+    if config.STORE_BACKEND == "supabase":
+        return _backend().find_pinned(content_hash, variant)
     with _lock:
         run_id = _pinned.get((content_hash, variant))
         run = _runs.get(run_id) if run_id is not None else None
@@ -127,6 +146,9 @@ def find_pinned(content_hash: str, variant: str = "original") -> Run | None:
 
 
 def pin(run_id: str, content_hash: str) -> None:
+    if config.STORE_BACKEND == "supabase":
+        _backend().pin(run_id, content_hash)
+        return
     with _lock:
         run = _runs.get(run_id)
         if run is None:
@@ -142,6 +164,8 @@ def list_pinned() -> list[str]:
     re-runs the pipeline, while /health cheerfully reports the demo is
     insured. The header dot has to be able to be wrong out loud.
     """
+    if config.STORE_BACKEND == "supabase":
+        return _backend().list_pinned()
     with _lock:
         return sorted({
             run_id for run_id in _pinned.values() if run_id in _runs
@@ -150,6 +174,8 @@ def list_pinned() -> list[str]:
 
 def dangling_pins() -> list[str]:
     """Pins pointing at runs that no longer exist. Should always be empty."""
+    if config.STORE_BACKEND == "supabase":
+        return _backend().dangling_pins()
     with _lock:
         return sorted({
             run_id for run_id in _pinned.values() if run_id not in _runs
@@ -165,6 +191,8 @@ def is_writable() -> bool:
     Feeds /health, which Track B renders as a dot in the header. A constant
     would make that dot meaningless.
     """
+    if config.STORE_BACKEND == "supabase":
+        return _backend().is_writable()
     try:
         config.RUNS_DIR.mkdir(parents=True, exist_ok=True)
         probe = config.RUNS_DIR / ".probe"
