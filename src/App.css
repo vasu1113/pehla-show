@@ -47,7 +47,9 @@
 
 .left-col > .script-pane,
 .left-col > .analysis-panel,
-.left-col > .casting-panel {
+.left-col > .casting-panel,
+.left-col > .evidence-panel,
+.left-col > .notes-panel {
   flex: 1;
   min-height: 0;
 }
@@ -65,10 +67,11 @@
   border-bottom: 2px solid transparent;
   color: var(--bone-dim);
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  padding: 9px 8px;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  padding: 9px 3px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .left-tab.is-active {

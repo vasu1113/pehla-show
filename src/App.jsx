@@ -3,6 +3,8 @@ import { FilmStrip } from './film/FilmStrip';
 import { ScriptPane } from './components/ScriptPane';
 import { AnalysisPanel } from './analysis/AnalysisPanel';
 import { CastingPanel } from './analysis/CastingPanel';
+import { EvidencePanel } from './components/Evidence/EvidencePanel';
+import { NotesPanel } from './components/Notes/NotesPanel';
 import { AudienceLayer } from './audience/AudienceLayer';
 import { CriticBoxes } from './critics/CriticsBalcony';
 import { FILM_CHUNKS, buildTimeline, chunkAtTime } from './film/filmData';
@@ -50,10 +52,24 @@ export default function App() {
             >
               ANALYSIS
             </button>
+            <button
+              className={`left-tab${leftTab === 'evidence' ? ' is-active' : ''}`}
+              onClick={() => setLeftTab('evidence')}
+            >
+              EVIDENCE
+            </button>
+            <button
+              className={`left-tab${leftTab === 'notes' ? ' is-active' : ''}`}
+              onClick={() => setLeftTab('notes')}
+            >
+              NOTES
+            </button>
           </div>
           {leftTab === 'script' && <ScriptPane />}
           {leftTab === 'casting' && <CastingPanel />}
           {leftTab === 'analysis' && <AnalysisPanel />}
+          {leftTab === 'evidence' && <EvidencePanel />}
+          {leftTab === 'notes' && <NotesPanel />}
         </div>
 
         {/* Right column — the cinema: screen (B5) on top, audience below. */}
