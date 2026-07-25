@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { FilmStrip } from './film/FilmStrip';
 import { ScriptPane } from './components/ScriptPane';
 import { AnalysisPanel } from './analysis/AnalysisPanel';
+import { CastingPanel } from './analysis/CastingPanel';
 import { AudienceLayer } from './audience/AudienceLayer';
 import { CriticBoxes } from './critics/CriticsBalcony';
 import { FILM_CHUNKS, buildTimeline, chunkAtTime } from './film/filmData';
@@ -38,13 +39,21 @@ export default function App() {
               SCRIPT
             </button>
             <button
+              className={`left-tab${leftTab === 'casting' ? ' is-active' : ''}`}
+              onClick={() => setLeftTab('casting')}
+            >
+              CASTING
+            </button>
+            <button
               className={`left-tab${leftTab === 'analysis' ? ' is-active' : ''}`}
               onClick={() => setLeftTab('analysis')}
             >
               ANALYSIS
             </button>
           </div>
-          {leftTab === 'script' ? <ScriptPane /> : <AnalysisPanel />}
+          {leftTab === 'script' && <ScriptPane />}
+          {leftTab === 'casting' && <CastingPanel />}
+          {leftTab === 'analysis' && <AnalysisPanel />}
         </div>
 
         {/* Right column — the cinema: screen (B5) on top, audience below. */}

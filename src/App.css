@@ -46,7 +46,8 @@
 }
 
 .left-col > .script-pane,
-.left-col > .analysis-panel {
+.left-col > .analysis-panel,
+.left-col > .casting-panel {
   flex: 1;
   min-height: 0;
 }

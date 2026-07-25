@@ -1,0 +1,138 @@
+.casting-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  background: var(--ink);
+}
+
+.cast-head {
+  padding: 14px 16px 10px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  border-bottom: 1px solid var(--bone-faint);
+}
+
+.cast-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cast-note {
+  margin: 0 0 6px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--bone-faint);
+}
+
+.cast-zone-label {
+  margin-top: 8px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+}
+
+.cast-zone {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 46px;
+  padding: 8px;
+  border: 1px dashed var(--bone-faint);
+  border-radius: 3px;
+  align-content: flex-start;
+}
+
+.cast-zone--screening { background: rgba(237, 232, 223, 0.03); }
+
+.cast-empty {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  color: var(--bone-faint);
+  align-self: center;
+  margin: 0 auto;
+}
+
+.cast-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  background: var(--ink-lift);
+  border: 1px solid var(--bone-faint);
+  border-radius: 3px;
+  cursor: grab;
+  user-select: none;
+}
+.cast-chip:active { cursor: grabbing; }
+.cast-chip:hover { border-color: var(--bone-dim); }
+
+.cast-grip { color: var(--bone-faint); font-size: 11px; line-height: 1; }
+
+.cast-chip-name {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--bone);
+}
+
+.cast-chip-count {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  color: var(--bone-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* analysis-basis controls */
+.cast-seg-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cast-seg-label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--bone-dim);
+}
+
+.cast-seg { display: flex; gap: 3px; }
+
+.cast-seg-btn {
+  background: none;
+  border: 1px solid var(--bone-faint);
+  border-radius: 2px;
+  color: var(--bone-dim);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  padding: 4px 7px;
+  cursor: pointer;
+}
+.cast-seg-btn.is-active { background: var(--bone); color: var(--ink); border-color: var(--bone); }
+
+.cast-rerun {
+  margin-top: 10px;
+  padding: 8px;
+  background: none;
+  border: 1px solid var(--bone-faint);
+  border-radius: 3px;
+  color: var(--bone-faint);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  cursor: not-allowed;
+}
