@@ -28,6 +28,9 @@ from app.stages.a1_parse import content_hash, parse_beats  # noqa: E402
 from app.stages.a2_score import score_persona_verbose  # noqa: E402
 from app.stages.a3_simulate import simulate_population  # noqa: E402
 from app.stages.a4_cliffs import detect_cliffs  # noqa: E402
+from app.stages.a6_experts import convene_room  # noqa: E402
+from app.stages.a7_synth import synthesise_room  # noqa: E402
+from app.prompts.expert import LENSES as EXPERT_LENSES  # noqa: E402
 
 
 def load_personas() -> list[models.Persona]:
@@ -86,6 +89,15 @@ async def run(raw_text: str, title: str) -> models.Run:
     print(f"A3  {len(audience) - len(left)}/{len(audience)} seats retained")
     print(f"A4  {len(drops)} drop events")
 
+    # The five critics fire in parallel, and never raise — an empty room is a
+    # degraded screening, not a failed one.
+    notes, room_warnings = await convene_room(raw_text, beats, drops, llm)
+    warnings.extend(room_warnings)
+    print(f"A6  {len(notes)} notes from {len({n.agent_id for n in notes})} critics")
+
+    synthesis = await synthesise_room(notes, drops, len(left), llm)
+    print(f"A7  {'synthesised' if synthesis else 'unavailable — notes stay ungrouped'}")
+
     cohort_retention: dict[str, float] = {}
     for p in kept:
         seats = [m for m in audience if m.cohort == p.id]
@@ -116,6 +128,12 @@ async def run(raw_text: str, title: str) -> models.Run:
         ],
         audience=audience,
         drop_events=drops,
+        agents=[
+            models.AgentMeta(id=a.value, label=lens["label"], lens=lens["lens"])
+            for a, lens in EXPERT_LENSES.items()
+        ],
+        notes=notes,
+        room_synthesis=synthesis,
         summary=models.Summary(
             retained_pct=round((len(audience) - len(left)) / len(audience), 3),
             seats_total=len(audience),
