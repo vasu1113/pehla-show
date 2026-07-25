@@ -52,11 +52,35 @@ export function generateSeats(rows = 5, cols = 6) {
   return seats;
 }
 
+// B6 verdict tier per person (placeholder for real patience data). The mix
+// guarantees several tiers on screen at once and at least one popcorn-thrower.
+const VERDICT_LINES = {
+  applause: ['Paisa vasool.', 'Wah, kya baat.', 'That ending!', 'Loved it.'],
+  nod: ['Not bad.', 'Decent enough.', 'Time pass.', 'Okay-ish.'],
+  headshake: ['What was that.', 'Waste of time.', 'Predictable.', 'Nahi yaar.'],
+  popcorn: ['Rubbish!', 'Booo!', 'Refund!'],
+  stands: [], // stands up, says nothing
+  left: [], // empty seat — their absence is the review
+};
+
+function verdictTier(i) {
+  if (i % 9 === 4) return 'left';
+  if (i % 13 === 3) return 'popcorn';
+  if (i % 11 === 6) return 'stands';
+  if (i % 7 === 2) return 'headshake';
+  if (i % 5 === 0) return 'applause';
+  return 'nod';
+}
+
 export function generateAudience() {
   const seats = generateSeats();
   return seats.map((s, i) => {
     const delay = 0.1 + ((i * 7) % 30) * 0.06; // staggered arrivals, ~0.1–1.8s
+    const tier = verdictTier(i);
+    const pool = VERDICT_LINES[tier];
     return {
+      verdict: tier,
+      verdictLine: pool.length ? pool[i % pool.length] : '',
       id: s.id,
       row: s.row,
       type: LISTENER_TYPES[i % LISTENER_TYPES.length],

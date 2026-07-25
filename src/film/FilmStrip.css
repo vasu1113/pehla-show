@@ -12,6 +12,12 @@
   transition: filter 600ms ease; /* tension glow eases between chunks */
 }
 
+/* After the film ends (B6): the screen holds dark for the verdict. */
+.film-screen--ended {
+  background: #050403;
+  transition: none;
+}
+
 /* Each still fills the screen. Transform (Ken Burns) is set inline from the clock. */
 .still,
 .still-layer {

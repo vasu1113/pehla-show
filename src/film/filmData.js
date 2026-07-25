@@ -60,6 +60,10 @@ export const FILM_CHUNKS = [
 // demo-friendly length. Raw durations sum to 540s; at 0.2 the film runs ~108s.
 export const TIME_SCALE = 0.2;
 
+// After the film ends, the clock runs on for the verdict (B6) — so the whole
+// end sequence lives on the same timeline and scrubbing rewinds it too.
+export const VERDICT_SECONDS = 6.5;
+
 /** Cumulative start time of each chunk, plus the film's total length.
  *  Durations are scaled here, so chunks, thoughts and critic notes all
  *  compress together — the single knob for demo length. */
