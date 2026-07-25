@@ -6,13 +6,17 @@
  * hand-tuned theatre + Track C's profiles — replaced at wire-in (B8).
  */
 
+// The six cohort ids from the frozen contract, in contract order. These are
+// not display strings — /personas, every drop event and every tooltip key off
+// them, so a prettier name here would silently stop matching the API. Human
+// copy comes from GET /personas; the UI never invents it.
 export const LISTENER_TYPES = [
-  'COMMUTER',
-  'NIGHT RIDER',
-  'SLEEP LISTENER',
-  'DEVOTEE',
-  'CHANNEL SURFER',
-  'FAMILY',
+  'commuter',
+  'kitchen',
+  'night_rider',
+  'metro_pro',
+  'sleep',
+  'diaspora',
 ];
 
 // What people mutter to themselves as they sit down. Real register, short.
@@ -83,6 +87,7 @@ export function generateAudience() {
       verdictLine: pool.length ? pool[i % pool.length] : '',
       id: s.id,
       row: s.row,
+      col: s.col, // Track A's walkout uses this to pick the exit direction
       type: LISTENER_TYPES[i % LISTENER_TYPES.length],
       expectation: EXPECTATIONS[(i * 3) % EXPECTATIONS.length],
       // Only a few voice a thought on the way in — kept sparse for readability.

@@ -1,22 +1,49 @@
-import { memo, useMemo } from 'react';
-import { generateAudience } from './audienceData';
+import { memo, useMemo, useState } from 'react';
 import { buildThoughtSchedule, activeThoughts } from './thoughtData';
 import { buildVerdictBubbles, activeVerdictBubbles, popcornProgress } from './verdictData';
 import { Figure } from './Figure';
+import { useRunAudience } from './useRunAudience';
 import { useClock } from '../clock/useClock';
 import { FILM_CHUNKS, buildTimeline } from '../film/filmData';
+import { stateFor, ease } from '../figures';
 import './AudienceLayer.css';
 
 /**
- * NX1 — the seated figures + one-shot entrance/expectation. During the verdict
- * (B6) each seat takes its verdict pose via a CSS class. Memoized on (people,
- * verdict), so it renders once for the film and once when the verdict begins.
+ * NX1 (Track B) + the walkout (Track A) + the verdict (B6).
+ *
+ * Track B seats them and animates arrivals; Track A decides who leaves, when
+ * and why (an exit on its own wrapper so it never fights the `arrive`
+ * keyframes). At the end, whoever is still HERE takes a verdict pose — the
+ * people who left are already gone, so their empty seat is their review.
+ *
+ * Pure function of the clock: scrub to the end and the hall reacts; scrub back
+ * and everyone walks in again.
  */
-const Figures = memo(function Figures({ people, verdict }) {
+const Figures = memo(function Figures({ people, currentSeconds, total, onPick }) {
+  const inVerdict = currentSeconds >= total;
   return (
     <>
       {people.map((p) => {
-        const poseClass = verdict ? ` verdict verdict--${p.verdict}` : '';
+        const { state, t } = stateFor(p.id, p.leftAtSec, currentSeconds);
+        if (state === 'gone') return null;
+
+        // Stand, shuffle to the aisle, then away — mirrors Track A's exit.
+        let exit = '';
+        let opacity = 1;
+        if (state === 'leaving') {
+          const e = ease(t);
+          const dir = p.col < 3 ? -1 : 1;
+          const dx = dir * 90 * e;
+          const dy = -10 * Math.min(1, t * 3) + 60 * Math.max(0, e - 0.35) * 1.4;
+          exit = `translate(${dx}px, ${dy}px)`;
+          opacity = 1 - Math.max(0, (t - 0.45) / 0.55);
+        }
+
+        // B6 verdict pose — only for people still in their seat at the end.
+        // (Someone who left has no verdict; their absence is the review.)
+        const tier = p.verdict === 'left' ? 'stands' : p.verdict;
+        const poseClass = inVerdict && state === 'here' ? ` verdict verdict--${tier}` : '';
+
         return (
           <div
             key={p.id}
@@ -33,13 +60,22 @@ const Figures = memo(function Figures({ people, verdict }) {
               '--d': `${p.delay}s`,
             }}
           >
-            {p.showsBubble && !verdict && (
+            {p.showsBubble && state === 'here' && !inVerdict && (
               <div className="expectation-bubble" style={{ '--bd': `${p.bubbleDelay}s` }}>
                 {p.expectation}
               </div>
             )}
-            <div className="fig-wrap" style={{ '--d': `${p.delay}s` }}>
-              <Figure tone={p.tone} hair={p.hair} />
+            {/* exit transform + fade kept off .seat-slot so the arrive
+                keyframes (left/top/opacity) stay untouched */}
+            <div
+              className="exit-wrap"
+              style={{ transform: exit, opacity }}
+              onClick={() => p.reasonLabel && onPick(p)}
+              role={p.reasonLabel ? 'button' : undefined}
+            >
+              <div className="fig-wrap" style={{ '--d': `${p.delay}s` }}>
+                <Figure tone={p.tone} hair={p.hair} />
+              </div>
             </div>
           </div>
         );
@@ -49,11 +85,10 @@ const Figures = memo(function Figures({ people, verdict }) {
 });
 
 /**
- * NX2 — live thoughts during the film (clock-driven, sparse). Not shown during
- * the verdict.
+ * NX2 — live thoughts during the film. Only from people still in the room:
+ * a seat that emptied ninety seconds ago has no opinion about this chunk.
  */
-function LiveThoughts({ people }) {
-  const { currentSeconds } = useClock();
+function LiveThoughts({ people, currentSeconds }) {
   const schedule = useMemo(() => {
     const { timed } = buildTimeline(FILM_CHUNKS);
     return buildThoughtSchedule(timed, people.length);
@@ -67,6 +102,7 @@ function LiveThoughts({ people }) {
       {active.map(({ event, opacity }) => {
         const p = people[event.personId];
         if (!p) return null;
+        if (stateFor(p.id, p.leftAtSec, currentSeconds).state !== 'here') return null;
         return (
           <div
             key={event.id}
@@ -88,10 +124,14 @@ function LiveThoughts({ people }) {
   );
 }
 
-/** B6 — the staggered verdict bubbles (max six on screen), clock-driven. */
+/** B6 — the staggered verdict bubbles (max six), from the people who STAYED. */
 function VerdictBubbles({ people, total }) {
   const { currentSeconds } = useClock();
-  const schedule = useMemo(() => buildVerdictBubbles(people), [people]);
+  const stayers = useMemo(
+    () => people.filter((p) => p.leftAtSec == null || p.leftAtSec >= total),
+    [people, total],
+  );
+  const schedule = useMemo(() => buildVerdictBubbles(stayers), [stayers]);
   const vt = currentSeconds - total;
   if (vt < 0) return null;
 
@@ -122,13 +162,15 @@ function VerdictBubbles({ people, total }) {
   );
 }
 
-/** B6 — the popcorn throw: an arc of kernels toward the screen, clock-driven. */
+/** B6 — the popcorn throw, from the fed-up people who stayed to throw it. */
 function Popcorn({ people, total }) {
   const { currentSeconds } = useClock();
   const prog = popcornProgress(currentSeconds - total);
   if (prog === null) return null;
 
-  const throwers = people.filter((p) => p.verdict === 'popcorn');
+  const throwers = people.filter(
+    (p) => p.verdict === 'popcorn' && (p.leftAtSec == null || p.leftAtSec >= total),
+  );
   return (
     <>
       {throwers.map((p) => (
@@ -151,24 +193,53 @@ function Popcorn({ people, total }) {
   );
 }
 
+function fmt(sec) {
+  const s = Math.max(0, Math.floor(sec ?? 0));
+  return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+}
+
 /**
- * THE AUDIENCE LAYER. Remount (via a changing `key` from the parent) replays
- * the arrivals.
+ * THE AUDIENCE LAYER — walkout during the film, verdict at the end.
  */
 export function AudienceLayer() {
-  const people = useMemo(() => generateAudience(), []);
-  const { currentSeconds } = useClock();
+  const { currentSeconds, duration } = useClock();
+  const { people } = useRunAudience(duration);
+  const [picked, setPicked] = useState(null);
   const { total } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
   const inVerdict = currentSeconds >= total;
+
+  const seated = people.filter(
+    (p) => stateFor(p.id, p.leftAtSec, currentSeconds).state === 'here',
+  ).length;
 
   return (
     <div className="audience">
       <div className="audience-floor">
-        <Figures people={people} verdict={inVerdict} />
-        {!inVerdict && <LiveThoughts people={people} />}
+        <Figures people={people} currentSeconds={currentSeconds} total={total} onPick={setPicked} />
+        {!inVerdict && <LiveThoughts people={people} currentSeconds={currentSeconds} />}
         {inVerdict && <VerdictBubbles people={people} total={total} />}
         {inVerdict && <Popcorn people={people} total={total} />}
       </div>
+
+      <div className="seated-count">
+        {seated} of {people.length} still here
+      </div>
+
+      {picked && (
+        <div className="who-card">
+          <div className="who-name">{picked.name}</div>
+          <div className="who-meta">
+            seat {picked.id} &middot; {picked.type}
+          </div>
+          <p className="who-body">
+            Left at {fmt(picked.leftAtRealSec)} &mdash; {picked.reasonLabel}
+          </p>
+          {picked.evidence && <p className="who-evidence">&ldquo;{picked.evidence}&rdquo;</p>}
+          <button className="ghost-btn" onClick={() => setPicked(null)}>
+            close
+          </button>
+        </div>
+      )}
     </div>
   );
 }

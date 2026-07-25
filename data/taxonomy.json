@@ -1,0 +1,210 @@
+{
+  "drain": [
+    {
+      "code": "EXPOSITION_STACK",
+      "label": "Exposition stacking",
+      "description": "Consecutive stretches of background with nobody wanting anything — you're being briefed, not taken somewhere.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "NO_OPEN_QUESTION",
+      "label": "No open question",
+      "description": "Nothing is unresolved at the end of a beat, so there's no reason to stay for the next one.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "TROPE_FATIGUE",
+      "label": "Trope fatigue",
+      "description": "A character beat or plot move you've already heard a hundred times — the story is going exactly where you expected.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "CHARACTER_OVERLOAD",
+      "label": "Character overload",
+      "description": "Too many new voices arriving too close together, making it impossible to know whose story this is.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "UNCLEAR_POV",
+      "label": "Unclear point of view",
+      "description": "You can't tell whose experience you're supposed to be tracking, so no one's stakes land.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "STAKES_TOO_LOW",
+      "label": "Stakes too low",
+      "description": "What's at risk doesn't feel worth caring about, so neither the tension nor the resolution matters.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "PACING_FLAT",
+      "label": "Flat pacing",
+      "description": "The beat moves at the same emotional speed as the last several beats — no lift, no drop, no shift.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "PAYOFF_TOO_FAR",
+      "label": "Payoff too far away",
+      "description": "The question was opened so long ago and has been deferred so many times that you've stopped waiting for the answer.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "TONAL_WHIPLASH",
+      "label": "Tonal whiplash",
+      "description": "The emotional register shifts abruptly — from comic to tragic or tense to breezy — without a bridge to carry you across.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "DIALOGUE_UNVOICED",
+      "label": "Unvoiced dialogue",
+      "description": "Characters speak in a way that sounds written rather than spoken — interchangeable voices that could belong to anyone.",
+      "corpus_frequency": null
+    }
+  ],
+  "refill": [
+    {
+      "code": "QUESTION_OPENED",
+      "label": "Question opened",
+      "description": "Something new is left unresolved, pulling you into the next beat to find out what happens.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "STAKES_ESCALATED",
+      "label": "Stakes escalated",
+      "description": "What a character stands to lose just got bigger or more real, making the outcome matter more.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "NOVEL_PREMISE",
+      "label": "Novel premise",
+      "description": "A situation or combination you haven't encountered before — the story is going somewhere unfamiliar.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "EMOTIONAL_HIT",
+      "label": "Emotional hit",
+      "description": "A moment of genuine feeling — grief, joy, recognition — that makes the story feel true.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "TENSION_SPIKE",
+      "label": "Tension spike",
+      "description": "The immediate situation tips into danger or urgency, raising your heart rate before you've thought about it.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "TROPE_HIT",
+      "label": "Satisfying trope",
+      "description": "A familiar story beat lands exactly as hoped — the pleasure of the expected, delivered well.",
+      "corpus_frequency": null
+    },
+    {
+      "code": "VOICE_DISTINCTIVE",
+      "label": "Distinctive voice",
+      "description": "A character speaks in a way that could only be them — you'd know the voice with your eyes closed.",
+      "corpus_frequency": null
+    }
+  ],
+  "note_types": [
+    {
+      "code": "UNPLAYABLE_BEAT",
+      "agent_id": "director",
+      "label": "Unplayable beat"
+    },
+    {
+      "code": "NO_VISUAL_ANCHOR",
+      "agent_id": "director",
+      "label": "No visual anchor"
+    },
+    {
+      "code": "BLOCKING_UNCLEAR",
+      "agent_id": "director",
+      "label": "Blocking unclear"
+    },
+    {
+      "code": "TONE_UNDIRECTED",
+      "agent_id": "director",
+      "label": "Tone undirected"
+    },
+    {
+      "code": "CUT_CANDIDATE",
+      "agent_id": "editor",
+      "label": "Cut candidate"
+    },
+    {
+      "code": "MOVE_EARLIER",
+      "agent_id": "editor",
+      "label": "Move earlier"
+    },
+    {
+      "code": "SCENE_OVERLONG",
+      "agent_id": "editor",
+      "label": "Scene overlong"
+    },
+    {
+      "code": "ENTRY_TOO_LATE",
+      "agent_id": "editor",
+      "label": "Entry too late"
+    },
+    {
+      "code": "CLICHE",
+      "agent_id": "critic",
+      "label": "Cliché"
+    },
+    {
+      "code": "DERIVATIVE_STRUCTURE",
+      "agent_id": "critic",
+      "label": "Derivative structure"
+    },
+    {
+      "code": "UNEARNED_TURN",
+      "agent_id": "critic",
+      "label": "Unearned turn"
+    },
+    {
+      "code": "DISTINCTIVE",
+      "agent_id": "critic",
+      "label": "Distinctive"
+    },
+    {
+      "code": "MOTIVATION_UNSUPPORTED",
+      "agent_id": "psychologist",
+      "label": "Motivation unsupported"
+    },
+    {
+      "code": "EMOTIONAL_SKIP",
+      "agent_id": "psychologist",
+      "label": "Emotional skip"
+    },
+    {
+      "code": "INCONSISTENT_BEHAVIOUR",
+      "agent_id": "psychologist",
+      "label": "Inconsistent behaviour"
+    },
+    {
+      "code": "RELATIONSHIP_UNGROUNDED",
+      "agent_id": "psychologist",
+      "label": "Relationship ungrounded"
+    },
+    {
+      "code": "PERIOD_INCONSISTENT",
+      "agent_id": "historian",
+      "label": "Period inconsistent"
+    },
+    {
+      "code": "CULTURAL_MISFIT",
+      "agent_id": "historian",
+      "label": "Cultural misfit"
+    },
+    {
+      "code": "REGISTER_WRONG",
+      "agent_id": "historian",
+      "label": "Register wrong"
+    },
+    {
+      "code": "DETAIL_UNGROUNDED",
+      "agent_id": "historian",
+      "label": "Detail ungrounded"
+    }
+  ]
+}

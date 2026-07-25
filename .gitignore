@@ -17,3 +17,8 @@ npm-debug.log*
 .DS_Store
 .vscode/
 .idea/
+
+# Track A — python
+api/.venv/
+api/.runs/
+__pycache__/
