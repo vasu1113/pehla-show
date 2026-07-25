@@ -2,19 +2,19 @@
   {
     "id": "bharat_prime_time",
     "personas": [
-      "commuter_calibrated",
-      "kitchen_calibrated",
-      "night_rider_calibrated",
-      "metro_pro_calibrated",
-      "sleep_calibrated",
-      "diaspora_calibrated"
+      "commuter",
+      "kitchen",
+      "night_rider",
+      "metro_pro",
+      "sleep",
+      "diaspora"
     ]
   },
   {
     "id": "metro_bingers",
     "personas": [
-      "metro_pro_calibrated",
-      "night_rider_calibrated",
+      "metro_pro",
+      "night_rider",
       "metro_pro_variant_3",
       "night_rider_variant_2",
       "metro_pro_variant_9",
@@ -24,7 +24,7 @@
   {
     "id": "global_diaspora",
     "personas": [
-      "diaspora_calibrated",
+      "diaspora",
       "diaspora_variant_5",
       "diaspora_variant_11",
       "diaspora_variant_17",

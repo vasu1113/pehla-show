@@ -167,7 +167,12 @@ def main() -> None:
         print(f"  ! {w.code}: {w.message}")
 
     if args.emit_mock:
-        out = config.DATA_DIR / "mockRun.json"
+        # public/, not data/ — this is the file the browser fetches at
+        # /data/mockRun.json. Writing it anywhere else leaves the frontend
+        # rendering a stale hand-authored run while the pipeline output sits
+        # unread on disk, which is exactly what happened before.
+        out = config.REPO_ROOT / "public" / "data" / "mockRun.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(run_obj.model_dump(mode="json"), indent=2))
         print(f"\nwrote {out}")
 
