@@ -208,6 +208,76 @@ function DropInsights({ run }) {
   );
 }
 
+/** THE GAP — intended tension (what the writer wrote) vs received attention
+ *  (what the room gave). The shaded area is where attention fell below the
+ *  writing: the thesis, made visual. Monochrome; live marker tracks the clock. */
+function TheGap({ run, total }) {
+  const { currentSeconds } = useClock();
+  const W = 980, H = 300, padL = 58, padR = 24, padT = 20, padB = 44;
+  const runDuration = run.script?.duration_sec;
+  const x = (t) => padL + (t / total) * (W - padL - padR);
+  const y = (v) => padT + (1 - v) * (H - padT - padB);
+
+  const { intendedPath, attentionPath, gapPath, widest } = useMemo(() => {
+    const beats = run.beats ?? [];
+    const aud = run.audience ?? [];
+    if (!beats.length || !aud.length) return { intendedPath: '', attentionPath: '', gapPath: '', widest: null };
+
+    const NORM = 6; // ≈ max start_patience, normalises attention to 0..1
+    let ten = 0.45;
+    const intended = [];
+    const attention = [];
+    beats.forEach((b, i) => {
+      ten = Math.max(0, Math.min(1, ten + (b.tension_delta || 0) * 0.11)); // the writer's arousal build
+      intended.push(ten);
+      const mean = aud.reduce((s, a) => s + (a.patience_trace[i] ?? 0), 0) / aud.length;
+      attention.push(Math.max(0, Math.min(1, mean / NORM)));
+    });
+
+    const t = beats.map((b) => runSecToClock(b.start_sec, runDuration, total));
+    const line = (arr) => arr.map((v, i) => `${i ? 'L' : 'M'} ${x(t[i])} ${y(v)}`).join(' ');
+    // gap polygon: top = intended, bottom = min(intended, attention) → fills only where attention is below
+    const bot = intended.map((v, i) => Math.min(v, attention[i]));
+    let gp = `M ${x(t[0])} ${y(intended[0])}`;
+    for (let i = 1; i < t.length; i++) gp += ` L ${x(t[i])} ${y(intended[i])}`;
+    for (let i = t.length - 1; i >= 0; i--) gp += ` L ${x(t[i])} ${y(bot[i])}`;
+    gp += ' Z';
+
+    let widest = null, mx = 0;
+    beats.forEach((b, i) => {
+      const g = intended[i] - attention[i];
+      if (g > mx) { mx = g; widest = b; }
+    });
+    return { intendedPath: line(intended), attentionPath: line(attention), gapPath: gp, widest };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [run, total, runDuration]);
+
+  const mx = x(Math.max(0, Math.min(total, currentSeconds)));
+
+  return (
+    <div className="an-block">
+      <div className="an-label">THE GAP · INTENDED TENSION vs RECEIVED ATTENTION</div>
+      <svg className="an-svg" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Intended tension versus received attention">
+        {[0, 0.5, 1].map((v) => (
+          <line key={v} className="an-grid" x1={padL} y1={y(v)} x2={W - padR} y2={y(v)} />
+        ))}
+        <path className="an-gap-fill" d={gapPath} />
+        <path className="an-line" d={intendedPath} />
+        <path className="an-line an-line--thin" d={attentionPath} />
+        <line className="an-marker" x1={mx} y1={padT} x2={mx} y2={H - padB} />
+      </svg>
+      <div className="an-gap-legend">
+        <span><span className="sw sw-intended" /> intended tension</span>
+        <span><span className="sw sw-attention" /> received attention</span>
+        <span><span className="sw sw-gap" /> where the writing lost the room</span>
+      </div>
+      {widest && (
+        <div className="an-gap-note">Widest gap: the {widest.type} at {formatRunTime(widest.start_sec)}</div>
+      )}
+    </div>
+  );
+}
+
 /**
  * THE ANALYSIS PANEL — the backbone. Retention curve, per-segment small
  * multiples, and the key-metrics scorecard, all from the one simulation.
@@ -225,6 +295,7 @@ export function AnalysisPanel() {
       <div className="an-head">ANALYSIS · THE ROOM, MEASURED</div>
       <div className="an-scroll">
         <Scorecard run={run} />
+        <TheGap run={run} total={total} />
         <RetentionChart run={run} total={total} onSeek={(t) => clock.seek(t)} />
         <AttentionStory run={run} />
         <DropInsights run={run} />

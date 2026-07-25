@@ -169,3 +169,22 @@
   .an-story-head { align-items: start; flex-direction: column; }
   .an-beat-rail { gap: 2px; height: 56px; }
 }
+
+/* THE GAP — intended tension vs received attention */
+.an-gap-fill { fill: var(--bone-dim); opacity: 0.16; }
+.an-gap-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+}
+.an-gap-legend .sw { display: inline-block; width: 16px; height: 2px; margin-right: 5px; vertical-align: middle; }
+.an-gap-legend .sw-intended { background: var(--bone); height: 3px; }
+.an-gap-legend .sw-attention { background: var(--bone-dim); }
+.an-gap-legend .sw-gap { height: 9px; background: var(--bone-dim); opacity: 0.3; }
+.an-gap-note { margin-top: 6px; font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--bone); }
