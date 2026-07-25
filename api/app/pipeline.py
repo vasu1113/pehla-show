@@ -5,6 +5,7 @@ import json
 from datetime import datetime, timezone
 
 from app import cache, config, models, store
+from app.blindfold import BlindfoldViolation
 from app.llm import LLM, get_llm
 from app.prompts.expert import LENSES as EXPERT_LENSES
 from app.stages import (
@@ -188,6 +189,14 @@ async def _screen(
         except BaseException as error:
             if isinstance(error, asyncio.CancelledError):
                 raise
+            # A leak is NOT a cohort failure and must never be degraded into
+            # one. Swallowing it here would drop one cohort, add a mild
+            # warning, and let the run finish — producing a full set of
+            # confident numbers from a model that could see the ending. That
+            # is the single failure this product cannot survive quietly, so it
+            # takes the whole run down.
+            if isinstance(error, BlindfoldViolation):
+                raise
             return persona, None, error
         return persona, result, None
 
@@ -306,6 +315,18 @@ async def analyse(
             beats,
             personas,
             llm,
+        )
+    except BlindfoldViolation as error:
+        # Distinct from every other failure on purpose. This does not mean a
+        # call failed — it means the instrument was reading the ending, and
+        # every number it produced is worthless. Say so in its own words.
+        return _terminal_error(
+            run,
+            code="BLINDFOLD_VIOLATED",
+            message=(
+                "The scorer was shown a chunk it should not have seen, so the "
+                f"screening is not valid: {error}"
+            ),
         )
     except _AudienceFailure as error:
         run = run.model_copy(
@@ -475,7 +496,16 @@ async def apply_recommended_fix(
     # fix path has to hold the same line on the way through, or Track B ends
     # up rendering a note pointing at a beat that no longer exists.
     live_beat_ids = {beat.id for beat in beats}
-    notes = [note for note in run.notes if note.beat_id in live_beat_ids]
+    # Drop ids are renumbered from de_01 every time the audience is
+    # re-simulated, so an inherited anchored_to_drop points at whatever
+    # happens to hold that slot now — a different moment, or nothing. Re-anchor
+    # to the drop on the same beat if the fix left one, otherwise clear it.
+    drop_by_beat = {event.beat_id: event.id for event in drops}
+    notes = [
+        note.model_copy(update={"anchored_to_drop": drop_by_beat.get(note.beat_id)})
+        for note in run.notes
+        if note.beat_id in live_beat_ids
+    ]
     orphaned = len(run.notes) - len(notes)
     if orphaned:
         warnings = [

@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import pytest
 
-from app import pipeline
+import asyncio
+
+from app import config, pipeline
 from app.models import (
     AgentId,
     Beat,
@@ -222,3 +224,36 @@ def test_a_short_leak_between_sample_points_is_still_caught() -> None:
 
     with pytest.raises(BlindfoldViolation):
         build_scorer_input(beats, 0, persona)
+
+
+# ── a leak is never a degradation ─────────────────────────────────────────
+
+
+def test_a_blindfold_violation_kills_the_run_rather_than_dropping_a_cohort(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The degradation policy must not swallow this one.
+
+    score_one caught every non-cancellation exception and turned it into a
+    dropped cohort. A BlindfoldViolation went the same way: one cohort lost,
+    a mild warning, and a run that finishes and hands over a full set of
+    confident numbers produced by a model that could see the ending. Worse
+    than a crash, because nobody would notice.
+    """
+    from app.blindfold import BlindfoldViolation
+
+    real = pipeline.a2_score.score_persona_verbose
+
+    async def leaky(beats, persona, llm=None):
+        if persona.id == "kitchen":
+            raise BlindfoldViolation("beat 14 leaked into the prompt for beat 3")
+        return await real(beats, persona, llm)
+
+    monkeypatch.setattr(pipeline.a2_score, "score_persona_verbose", leaky)
+    raw = (config.DATA_DIR / "hero_script.txt").read_text()
+    run = asyncio.run(pipeline.analyse("run_leak_test", raw, "Leak"))
+
+    assert run.status == "error"
+    assert [w.code for w in run.warnings] == ["BLINDFOLD_VIOLATED"]
+    assert "COHORT_DROPPED" not in {w.code for w in run.warnings}
+    assert run.audience == []
