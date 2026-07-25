@@ -26,8 +26,9 @@ function poolForChunk(chunk, prev) {
 }
 
 /**
- * Build the whole film's thought schedule from the timed chunks.
- * A couple of reactors per chunk, staggered within it, ~3s each.
+ * Build the whole film's thought schedule from the timed chunks. A single
+ * readable reaction appears through every beat; the room is never silent, but
+ * no two voices compete on screen.
  */
 export function buildThoughtSchedule(timed, peopleCount) {
   const events = [];
@@ -35,22 +36,24 @@ export function buildThoughtSchedule(timed, peopleCount) {
   timed.forEach((c, ci) => {
     const prev = ci > 0 ? timed[ci - 1] : null;
 
-    // The crowd only reacts on NOTABLE beats — a clear emotional signal:
-    // high tension, boredom, or a big swing from the previous chunk. Most
-    // chunks pass in silence, so the room stays readable.
-    const swing = prev ? Math.abs(c.tension - prev.tension) : 0;
-    const notable = c.tension >= 0.72 || c.tension <= 0.3 || swing >= 0.2;
-    if (!notable) return;
-
     const pool = poolForChunk(c, prev);
-    const clusterSize = 1 + (ci % 2); // 1 or 2 people, never a crowd
-    const base = c.start + c.duration * 0.4;
-    for (let k = 0; k < clusterSize; k++) {
-      const personId = (ci * 7 + k * 11) % peopleCount;
-      const text = pool[(ci * 3 + k) % pool.length];
-      const start = base + k * 0.5;
-      const end = Math.min(c.end - 0.1, start + 2.4);
-      if (end > start + 0.6) events.push({ id: uid++, personId, text, start, end });
+    const gap = 0.12;
+    const duration = 2.65;
+    let start = c.start + 0.12;
+    let k = 0;
+    while (start < c.end - 0.7) {
+      const end = Math.min(c.end - 0.02, start + duration);
+      if (end > start + 0.6) {
+        events.push({
+          id: uid++,
+          personId: (ci * 7 + k * 11 + 8) % peopleCount,
+          text: pool[(ci * 3 + k) % pool.length],
+          start,
+          end,
+        });
+      }
+      start = end + gap;
+      k += 1;
     }
   });
   return events;
@@ -71,13 +74,6 @@ export function thoughtOpacity(event, t) {
  * stacks two bubbles). Returns [{ event, opacity }].
  */
 export function activeThoughts(schedule, t) {
-  const byPerson = new Map();
-  for (const e of schedule) {
-    if (t >= e.start && t < e.end) byPerson.set(e.personId, e); // last wins
-  }
-  const out = [];
-  for (const e of byPerson.values()) {
-    out.push({ event: e, opacity: thoughtOpacity(e, t) });
-  }
-  return out;
+  const event = schedule.find((item) => t >= item.start && t < item.end);
+  return event ? [{ event, opacity: thoughtOpacity(event, t) }] : [];
 }

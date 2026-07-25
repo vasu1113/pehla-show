@@ -24,14 +24,14 @@ function CriticFigure() {
  * the film — the live A/B against the crowd — opening inward toward the stalls.
  * Reads THE CLOCK; notes are pure functions of it, so scrubbing is exact.
  */
-export function CriticBoxes({ side }) {
+export function CriticBoxes({ side, silent = false }) {
   const { currentSeconds } = useClock();
   const schedule = useMemo(() => {
     const { timed } = buildTimeline(FILM_CHUNKS);
     return buildCriticSchedule(timed);
   }, []);
 
-  const active = activeCriticNotes(schedule, currentSeconds);
+  const active = silent ? [] : activeCriticNotes(schedule, currentSeconds);
   const noteByCritic = new Map(active.map((a) => [a.event.criticId, a]));
 
   const critics = CRITICS.filter((c) => c.side === side).sort((a, b) => a.row - b.row);

@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from 'react';
+import { memo, useMemo } from 'react';
 import { buildThoughtSchedule, activeThoughts } from './thoughtData';
 import { buildVerdictBubbles, activeVerdictBubbles, popcornProgress } from './verdictData';
 import { Figure } from './Figure';
@@ -19,7 +19,7 @@ import './AudienceLayer.css';
  * Pure function of the clock: scrub to the end and the hall reacts; scrub back
  * and everyone walks in again.
  */
-const Figures = memo(function Figures({ people, currentSeconds, total, onPick }) {
+const Figures = memo(function Figures({ people, currentSeconds, total, entered }) {
   const inVerdict = currentSeconds >= total;
   return (
     <>
@@ -47,7 +47,7 @@ const Figures = memo(function Figures({ people, currentSeconds, total, onPick })
         return (
           <div
             key={p.id}
-            className={`seat-slot${poseClass}`}
+            className={`seat-slot${entered ? ' is-seated' : ''}${poseClass}`}
             style={{
               left: `${p.fl}%`,
               top: `${p.ft}%`,
@@ -60,19 +60,9 @@ const Figures = memo(function Figures({ people, currentSeconds, total, onPick })
               '--d': `${p.delay}s`,
             }}
           >
-            {p.showsBubble && state === 'here' && !inVerdict && (
-              <div className="expectation-bubble" style={{ '--bd': `${p.bubbleDelay}s` }}>
-                {p.expectation}
-              </div>
-            )}
             {/* exit transform + fade kept off .seat-slot so the arrive
                 keyframes (left/top/opacity) stay untouched */}
-            <div
-              className="exit-wrap"
-              style={{ transform: exit, opacity }}
-              onClick={() => p.reasonLabel && onPick(p)}
-              role={p.reasonLabel ? 'button' : undefined}
-            >
+            <div className="exit-wrap" style={{ transform: exit, opacity }}>
               <div className="fig-wrap" style={{ '--d': `${p.delay}s` }}>
                 <Figure tone={p.tone} hair={p.hair} />
               </div>
@@ -94,15 +84,17 @@ function LiveThoughts({ people, currentSeconds }) {
     return buildThoughtSchedule(timed, people.length);
   }, [people.length]);
 
-  const active = activeThoughts(schedule, currentSeconds);
+  const active = activeThoughts(schedule, currentSeconds).slice(0, 1);
   if (active.length === 0) return null;
 
   return (
     <>
       {active.map(({ event, opacity }) => {
-        const p = people[event.personId];
+        const preferred = people[event.personId];
+        const p = stateFor(preferred.id, preferred.leftAtSec, currentSeconds).state === 'here'
+          ? preferred
+          : people.find((candidate) => stateFor(candidate.id, candidate.leftAtSec, currentSeconds).state === 'here');
         if (!p) return null;
-        if (stateFor(p.id, p.leftAtSec, currentSeconds).state !== 'here') return null;
         return (
           <div
             key={event.id}
@@ -135,7 +127,7 @@ function VerdictBubbles({ people, total }) {
   const vt = currentSeconds - total;
   if (vt < 0) return null;
 
-  const active = activeVerdictBubbles(schedule, vt);
+  const active = activeVerdictBubbles(schedule, vt).slice(0, 1);
   return (
     <>
       {active.map((b) => {
@@ -163,9 +155,13 @@ function VerdictBubbles({ people, total }) {
 }
 
 /** B6 — the popcorn throw, from the fed-up people who stayed to throw it. */
-function Popcorn({ people, total }) {
-  const { currentSeconds } = useClock();
-  const prog = popcornProgress(currentSeconds - total);
+function Popcorn({ people, timed, total, currentSeconds }) {
+  const extreme = timed.find(
+    (chunk) => chunk.tension >= 0.9 && currentSeconds >= chunk.start && currentSeconds <= chunk.start + 1.2,
+  );
+  const prog = extreme
+    ? (currentSeconds - extreme.start) / 1.2
+    : popcornProgress(currentSeconds - timed[timed.length - 1].end);
   if (prog === null) return null;
 
   const throwers = people.filter(
@@ -193,19 +189,13 @@ function Popcorn({ people, total }) {
   );
 }
 
-function fmt(sec) {
-  const s = Math.max(0, Math.floor(sec ?? 0));
-  return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
-}
-
 /**
  * THE AUDIENCE LAYER — walkout during the film, verdict at the end.
  */
-export function AudienceLayer() {
+export function AudienceLayer({ entered = false }) {
   const { currentSeconds, duration } = useClock();
   const { people } = useRunAudience(duration);
-  const [picked, setPicked] = useState(null);
-  const { total } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
+  const { timed, total } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
   const inVerdict = currentSeconds >= total;
 
   const seated = people.filter(
@@ -215,31 +205,15 @@ export function AudienceLayer() {
   return (
     <div className="audience">
       <div className="audience-floor">
-        <Figures people={people} currentSeconds={currentSeconds} total={total} onPick={setPicked} />
+        <Figures people={people} currentSeconds={currentSeconds} total={total} entered={entered} />
         {!inVerdict && <LiveThoughts people={people} currentSeconds={currentSeconds} />}
         {inVerdict && <VerdictBubbles people={people} total={total} />}
-        {inVerdict && <Popcorn people={people} total={total} />}
+        <Popcorn people={people} timed={timed} total={total} currentSeconds={currentSeconds} />
       </div>
 
       <div className="seated-count">
         {seated} of {people.length} still here
       </div>
-
-      {picked && (
-        <div className="who-card">
-          <div className="who-name">{picked.name}</div>
-          <div className="who-meta">
-            seat {picked.id} &middot; {picked.type}
-          </div>
-          <p className="who-body">
-            Left at {fmt(picked.leftAtRealSec)} &mdash; {picked.reasonLabel}
-          </p>
-          {picked.evidence && <p className="who-evidence">&ldquo;{picked.evidence}&rdquo;</p>}
-          <button className="ghost-btn" onClick={() => setPicked(null)}>
-            close
-          </button>
-        </div>
-      )}
     </div>
   );
 }

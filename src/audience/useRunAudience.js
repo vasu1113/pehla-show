@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { generateAudience } from './audienceData';
+import { normalizeRun } from '../data/useRun';
 
 /**
  * Marries Track B's seating to Track A's screening.
@@ -31,6 +32,7 @@ export function useRunAudience(clockDuration) {
     let live = true;
     fetch('/data/mockRun.json')
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
+      .then(normalizeRun)
       .then((d) => live && setRun(d))
       .catch(() => {
         /* no run yet — Track B's arrivals still play, nobody leaves */

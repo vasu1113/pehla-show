@@ -93,7 +93,7 @@ export function FilmStrip() {
   const brightness = (0.8 + 0.35 * chunk.tension).toFixed(3);
 
   return (
-    <div className="film-screen" style={{ filter: `brightness(${brightness})` }}>
+    <div className="film-screen" style={{ filter: `brightness(${brightness})`, opacity: Math.min(1, currentSeconds / 0.8) }}>
       <Still chunk={chunk} transform={kenBurns(index, progress)} />
 
       {prev && (

@@ -1,15 +1,7 @@
 import { useMemo } from 'react';
 import { clock, useClock } from '../clock/useClock';
 import { FILM_CHUNKS, buildTimeline } from '../film/filmData';
-import { generateAudience } from '../audience/audienceData';
-import {
-  runSimulation,
-  retentionSeries,
-  retentionByType,
-  walkoutEvents,
-  analysisMetrics,
-  retentionAt,
-} from './simulation';
+import { runSecToClock, useRun } from '../data/useRun';
 import './AnalysisPanel.css';
 
 const pct = (v) => `${(v * 100).toFixed(1)}%`;
@@ -26,21 +18,38 @@ function stepPath(points, x, y) {
 
 /** AN.1 — the retention curve: % still listening over time, walkout dots, a
  *  live current-time marker, click a dot to jump the clock. Monochrome. */
-function RetentionChart({ sims, timed, total, onSeek }) {
+function RetentionChart({ run, total, onSeek }) {
   const { currentSeconds } = useClock();
-  const W = 320, H = 150, padL = 30, padR = 12, padT = 12, padB = 22;
+  const W = 980, H = 360, padL = 58, padR = 24, padT = 20, padB = 48;
   const x = (t) => padL + (t / total) * (W - padL - padR);
   const y = (v) => padT + (1 - v) * (H - padT - padB);
 
   const { path, dots } = useMemo(() => {
-    const pts = retentionSeries(sims, timed);
-    const evs = walkoutEvents(sims, timed);
+    if (!run?.summary) return { path: '', dots: [] };
+    const runDuration = run.script?.duration_sec;
+    let remaining = run.summary.seats_total;
+    const evs = (run.drop_events ?? []).map((drop) => {
+      remaining -= drop.seats_lost.length;
+      const time = runSecToClock(drop.timestamp, runDuration, total);
+      return {
+        chunkIndex: drop.id,
+        chunkType: drop.reason_label,
+        count: drop.seats_lost.length,
+        time,
+        value: remaining / run.summary.seats_total,
+      };
+    });
+    const pts = [
+      { t: 0, value: 1 },
+      ...evs.map((event) => ({ t: event.time, value: event.value })),
+      { t: total, value: run.summary.seats_retained / run.summary.seats_total },
+    ];
     return {
       path: stepPath(pts, x, y),
-      dots: evs.map((e) => ({ ...e, cx: x(e.time), cy: y(retentionAt(sims, e.time + 0.01)) })),
+      dots: evs.map((event) => ({ ...event, cx: x(event.time), cy: y(event.value) })),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sims, timed, total]);
+  }, [run, total]);
 
   const mx = x(Math.max(0, Math.min(total, currentSeconds)));
 
@@ -53,6 +62,11 @@ function RetentionChart({ sims, timed, total, onSeek }) {
             <line className="an-grid" x1={padL} y1={y(v)} x2={W - padR} y2={y(v)} />
             <text className="an-tick" x={padL - 5} y={y(v) + 3} textAnchor="end">{pct0(v)}</text>
           </g>
+        ))}
+        {[0, total / 2, total].map((t) => (
+          <text key={t} className="an-tick" x={x(t)} y={H - 16} textAnchor="middle">
+            {formatRunTime(t)}
+          </text>
         ))}
         {/* current-time marker */}
         <line className="an-marker" x1={mx} y1={padT} x2={mx} y2={H - padB} />
@@ -77,26 +91,20 @@ function RetentionChart({ sims, timed, total, onSeek }) {
 }
 
 /** AN.6 — per-segment small multiples: one quiet sparkline per listener type. */
-function SmallMultiples({ sims, timed, total }) {
-  const byType = useMemo(() => retentionByType(sims, timed), [sims, timed]);
-  const W = 150, H = 34, padB = 3;
-  const x = (t) => (t / total) * W;
-  const y = (v) => padB + (1 - v) * (H - padB * 2);
-
+function CohortRetention({ cohorts = [] }) {
   return (
     <div className="an-block">
-      <div className="an-label">BY LISTENER TYPE</div>
+      <div className="an-label">WHO STAYED WITH IT</div>
       <div className="an-multiples">
-        {byType.map((s) => (
-          <div className="an-mult" key={s.type}>
+        {cohorts.map((cohort) => (
+          <div className="an-mult" key={cohort.id}>
             <div className="an-mult-head">
-              <span className="an-mult-type">{s.type}</span>
-              <span className="an-mult-val">{pct0(s.points[s.points.length - 1].value)}</span>
+              <span className="an-mult-type">{cohort.label}</span>
+              <span className="an-mult-val">{pct(cohort.retained_pct)}</span>
             </div>
-            <svg className="an-spark" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
-              <line className="an-grid" x1="0" y1={y(0)} x2={W} y2={y(0)} />
-              <path className="an-line an-line--thin" d={stepPath(s.points, x, y)} />
-            </svg>
+            <div className="an-bar" aria-label={`${cohort.label}: ${pct(cohort.retained_pct)} retained`}>
+              <span style={{ width: `${cohort.retained_pct * 100}%` }} />
+            </div>
           </div>
         ))}
       </div>
@@ -105,32 +113,97 @@ function SmallMultiples({ sims, timed, total }) {
 }
 
 /** AN.5 — the scorecard a stakeholder acts on. */
-function Scorecard({ metrics }) {
-  const m = metrics;
+function Scorecard({ run }) {
+  const summary = run.summary;
+  const cohorts = run.cohorts ?? [];
+  const biggest = [...(run.drop_events ?? [])].sort((a, b) => b.seats_lost.length - a.seats_lost.length)[0];
+  const best = [...cohorts].sort((a, b) => b.retained_pct - a.retained_pct)[0];
+  const worst = [...cohorts].sort((a, b) => a.retained_pct - b.retained_pct)[0];
+  const verdict = summary.retained_pct >= 0.66 ? 'WORKS' : summary.retained_pct >= 0.45 ? 'MIXED' : 'LOSES THE ROOM';
   return (
     <div className="an-scorecard">
       <div className="an-tile an-tile--hero">
-        <div className="an-tile-val">{pct(m.finalRetention)}</div>
-        <div className="an-tile-cap">STAYED TO THE END · {m.stayed}/{m.n}</div>
+        <div className="an-tile-val">{pct(summary.seats_retained / summary.seats_total)}</div>
+        <div className="an-tile-cap">STAYED TO THE END · {summary.seats_retained}/{summary.seats_total}</div>
       </div>
       <div className="an-tile">
-        <div className="an-tile-val an-tile-val--sm">{m.verdict}</div>
+        <div className="an-tile-val an-tile-val--sm">{verdict}</div>
         <div className="an-tile-cap">PREDICTED VERDICT</div>
       </div>
       <div className="an-tile">
         <div className="an-tile-val an-tile-val--sm">
-          {m.biggest ? `${m.biggest.count} @ ${m.biggest.chunkType}` : '—'}
+          {biggest ? `${biggest.seats_lost.length} @ ${formatRunTime(biggest.timestamp)}` : '—'}
         </div>
         <div className="an-tile-cap">BIGGEST DROP-OFF</div>
       </div>
       <div className="an-tile">
-        <div className="an-tile-val an-tile-val--sm">{m.best.type} {pct0(m.best.retention)}</div>
+        <div className="an-tile-val an-tile-val--sm">{best ? `${best.label} ${pct(best.retained_pct)}` : '—'}</div>
         <div className="an-tile-cap">BEST SEGMENT</div>
       </div>
       <div className="an-tile">
-        <div className="an-tile-val an-tile-val--sm">{m.worst.type} {pct0(m.worst.retention)}</div>
+        <div className="an-tile-val an-tile-val--sm">{worst ? `${worst.label} ${pct(worst.retained_pct)}` : '—'}</div>
         <div className="an-tile-cap">LOSES</div>
       </div>
+    </div>
+  );
+}
+
+function AttentionStory({ run }) {
+  const dropsByBeat = new Map((run.drop_events ?? []).map((drop) => [drop.beat_id, drop]));
+  return (
+    <section className="an-story">
+      <div className="an-story-head">
+        <div>
+          <div className="an-label">ATTENTION STORY</div>
+          <p>Five viewers left. The wider room showed moments of hesitation before each exit.</p>
+        </div>
+        <div className="an-story-key"><i /> attention risk <b /> drop marker</div>
+      </div>
+      <div className="an-beat-rail" role="list" aria-label="Attention across script beats">
+        {(run.beats ?? []).map((beat) => {
+          const drop = dropsByBeat.get(beat.id);
+          const risk = drop ? Math.min(1, (drop.attention_affected?.length ?? drop.seats_lost.length) / 5) : 0;
+          return (
+            <div className={`an-beat${drop ? ' has-drop' : ''}`} key={beat.id} role="listitem" title={`${formatRunTime(beat.start_sec)} · ${beat.text_span}`}>
+              <span className="an-beat-fill" style={{ opacity: 0.18 + risk * 0.82 }} />
+              <small>{String(beat.id).padStart(2, '0')}</small>
+              {drop && <em>{drop.seats_lost.length}</em>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="an-story-foot"><span>OPEN</span><span>MIDPOINT</span><span>ENDING</span></div>
+    </section>
+  );
+}
+
+function formatRunTime(seconds) {
+  return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
+}
+
+function DropInsights({ run }) {
+  if (!run?.drop_events?.length) return null;
+  let remaining = run.summary.seats_total;
+  return (
+    <div className="an-block an-insights">
+      <div className="an-label">WHERE ATTENTION DROPPED — AND WHY</div>
+      {run.drop_events.map((drop) => {
+        const lost = drop.seats_lost.length;
+        const attentionAffected = drop.attention_affected?.length ?? lost;
+        remaining -= lost;
+        const percent = ((lost / run.summary.seats_total) * 100).toFixed(1);
+        const action = run.notes.find((note) => note.anchored_to_drop === drop.id)?.text
+          ?? run.room_synthesis?.recommended_fix;
+        return (
+          <article className="an-insight" key={drop.id}>
+            <div className="an-insight-time">{formatRunTime(drop.timestamp)} · {percent}% physically left · {attentionAffected} attention signals</div>
+            <div className="an-insight-title">{drop.reason_label}</div>
+            <p>{drop.evidence}</p>
+            <div className="an-insight-after">{remaining} of {run.summary.seats_total} still with you</div>
+            {action && <div className="an-insight-action">Counter: {action}</div>}
+          </article>
+        );
+      })}
     </div>
   );
 }
@@ -141,16 +214,21 @@ function Scorecard({ metrics }) {
  */
 export function AnalysisPanel() {
   const { timed, total } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
-  const sims = useMemo(() => runSimulation(generateAudience(), timed), [timed]);
-  const metrics = useMemo(() => analysisMetrics(sims, timed), [sims, timed]);
+  const { run } = useRun();
+
+  if (!run?.summary) {
+    return <div className="analysis-panel"><div className="an-head">ANALYSIS · THE ROOM, MEASURED</div></div>;
+  }
 
   return (
     <div className="analysis-panel">
       <div className="an-head">ANALYSIS · THE ROOM, MEASURED</div>
       <div className="an-scroll">
-        <Scorecard metrics={metrics} />
-        <RetentionChart sims={sims} timed={timed} total={total} onSeek={(t) => clock.seek(t)} />
-        <SmallMultiples sims={sims} timed={timed} total={total} />
+        <Scorecard run={run} />
+        <RetentionChart run={run} total={total} onSeek={(t) => clock.seek(t)} />
+        <AttentionStory run={run} />
+        <DropInsights run={run} />
+        <CohortRetention cohorts={run.cohorts} />
       </div>
     </div>
   );

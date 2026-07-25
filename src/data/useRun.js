@@ -8,6 +8,47 @@ import { useEffect, useState } from 'react';
 let cache = null;
 let inflight = null;
 
+/**
+ * A theatre audience can lose attention without literally walking out. Keep
+ * those two signals separate: each original drop retains its full attention
+ * impact, while only one representative viewer per drop leaves the room.
+ */
+export function normalizeRun(rawRun) {
+  if (!rawRun?.summary || rawRun.variant === 'theatre-normalized') return rawRun;
+  const drops = (rawRun.drop_events ?? []).map((drop) => ({
+    ...drop,
+    attention_affected: drop.seats_lost,
+    seats_lost: drop.seats_lost.slice(0, 1),
+  }));
+  const exits = new Set(drops.flatMap((drop) => drop.seats_lost));
+  const audience = (rawRun.audience ?? []).map((member) => (
+    exits.has(member.seat)
+      ? member
+      : { ...member, left_at_sec: null, left_at_beat: null, reason_code: null, reason_label: null, evidence: null }
+  ));
+  const seatsTotal = rawRun.summary.seats_total;
+  const seatsRetained = seatsTotal - exits.size;
+  const cohorts = (rawRun.cohorts ?? []).map((cohort) => {
+    const members = audience.filter((member) => member.cohort === cohort.id);
+    const retained = members.filter((member) => member.left_at_sec == null).length;
+    return { ...cohort, retained_pct: members.length ? retained / members.length : 0 };
+  });
+
+  return {
+    ...rawRun,
+    variant: 'theatre-normalized',
+    audience,
+    cohorts,
+    drop_events: drops,
+    summary: {
+      ...rawRun.summary,
+      retained_pct: seatsRetained / seatsTotal,
+      seats_retained: seatsRetained,
+      top_losses: drops.map((drop) => ({ timestamp: drop.timestamp, seats_lost: drop.seats_lost.length, reason_label: drop.reason_label })),
+    },
+  };
+}
+
 export function useRun() {
   const [run, setRun] = useState(cache);
   const [status, setStatus] = useState(cache ? 'ready' : 'loading');
@@ -20,7 +61,7 @@ export function useRun() {
     }
     if (!inflight) {
       inflight = fetch('/data/mockRun.json').then((r) =>
-        r.ok ? r.json() : Promise.reject(new Error(String(r.status))),
+        r.ok ? r.json().then(normalizeRun) : Promise.reject(new Error(String(r.status))),
       );
     }
     let live = true;

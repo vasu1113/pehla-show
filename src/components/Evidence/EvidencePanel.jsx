@@ -13,7 +13,7 @@ function formatTime(sec) {
 export function EvidencePanel() {
   const { run, status } = useRun();
   const { duration } = useClock();
-  const [tab, setTab] = useState('SCREENING');
+  const [tab, setTab] = useState('DROPS');
 
   if (status !== 'ready' || !run) {
     return (
@@ -150,25 +150,43 @@ export function EvidencePanel() {
     );
   };
 
+  const renderSuggestions = () => {
+    const consensus = run.room_synthesis?.consensus ?? [];
+    return run.drop_events.map((drop) => {
+      const notes = run.notes.filter((note) => note.anchored_to_drop === drop.id);
+      const agreement = consensus.find((item) => item.beat_id === drop.beat_id);
+      const suggestion = notes[0]?.text ?? agreement?.claim ?? run.room_synthesis?.recommended_fix;
+      const support = notes.map((note) => note.note_label).join(' · ');
+      return (
+        <div key={`fix-${drop.id}`} className="ev-card ev-note">
+          <div className="ev-note-label">COUNTER THE {drop.reason_label.toUpperCase()} · {formatTime(drop.timestamp)}</div>
+          <div className="ev-text">{suggestion}</div>
+          {support && <div className="ev-cohort">Grounded in: {support}</div>}
+          <div className="ev-evidence"><i>{drop.evidence}</i></div>
+        </div>
+      );
+    });
+  };
+
   return (
     <div className="evidence-panel">
       <div className="ev-head">
         EVIDENCE · 
         <button 
-          className={`ev-tab ${tab === 'SCREENING' ? 'active' : ''}`} 
-          onClick={() => setTab('SCREENING')}
+          className={`ev-tab ${tab === 'DROPS' ? 'active' : ''}`}
+          onClick={() => setTab('DROPS')}
         >
-          SCREENING
+          DROPS
         </button>
         <button 
-          className={`ev-tab ${tab === 'THE ROOM' ? 'active' : ''}`} 
-          onClick={() => setTab('THE ROOM')}
+          className={`ev-tab ${tab === 'SUGGESTIONS' ? 'active' : ''}`}
+          onClick={() => setTab('SUGGESTIONS')}
         >
-          THE ROOM
+          SUGGESTIONS
         </button>
       </div>
       <div className="ev-scroll">
-        {tab === 'SCREENING' ? renderScreening() : renderTheRoom()}
+        {tab === 'DROPS' ? renderScreening() : renderSuggestions()}
       </div>
     </div>
   );

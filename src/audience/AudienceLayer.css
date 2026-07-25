@@ -27,6 +27,10 @@
   will-change: left, top, opacity;
 }
 
+/* Entry has already happened in the dedicated foyer sequence. */
+.seat-slot.is-seated { animation: none; }
+.seat-slot.is-seated .fig-wrap { animation: none; }
+
 @keyframes arrive {
   0% { left: var(--sl); top: var(--st); opacity: 0; }
   15% { opacity: 1; }
