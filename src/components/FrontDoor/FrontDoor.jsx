@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import personas from '../../data/personas.json';
 import presets from '../../data/presets.json';
+import { Figure } from '../../audience/Figure';
 import './FrontDoor.css';
 
 const categoryLabel = {
@@ -14,6 +15,13 @@ const categoryLabel = {
 const titleCase = (s) => s.replaceAll('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 const presetLabel = (id) => (id === 'custom' ? 'Custom room' : titleCase(id));
 const personaById = new Map(personas.map((p) => [p.id, p]));
+
+// give each persona a stable little look, so the library reads as different people
+const hairFor = (id) => {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) & 0xffff;
+  return h % 4;
+};
 
 export function FrontDoor({ onStart }) {
   const defaultPreset = presets.find((p) => p.id === 'bharat_prime_time');
@@ -33,17 +41,41 @@ export function FrontDoor({ onStart }) {
     );
   }, [category, query]);
 
+  const add = (id) =>
+    setSelected((cur) => (cur.includes(id) || cur.length >= 6 ? cur : [...cur, id]));
+  const remove = (id) => setSelected((cur) => cur.filter((x) => x !== id));
   const choosePreset = (preset) => {
     setActivePreset(preset.id);
-    setSelected(preset.personas);
+    setSelected(preset.personas.slice(0, 6));
     if (preset.id === 'custom') setCategory('all');
   };
 
-  const toggle = (id) => {
-    setActivePreset('custom');
-    setSelected((cur) =>
-      cur.includes(id) ? cur.filter((x) => x !== id) : cur.length < 6 ? [...cur, id] : cur,
-    );
+  // drag + click both work
+  const markCustom = () => setActivePreset('custom');
+  const dragStart = (e, id, from) => e.dataTransfer.setData('text/plain', JSON.stringify({ id, from }));
+  const allow = (e) => e.preventDefault();
+  const payload = (e) => {
+    try {
+      return JSON.parse(e.dataTransfer.getData('text/plain'));
+    } catch {
+      return null;
+    }
+  };
+  const dropInRoom = (e) => {
+    e.preventDefault();
+    const d = payload(e);
+    if (d?.from === 'lib') {
+      markCustom();
+      add(d.id);
+    }
+  };
+  const dropInLibrary = (e) => {
+    e.preventDefault();
+    const d = payload(e);
+    if (d?.from === 'room') {
+      markCustom();
+      remove(d.id);
+    }
   };
 
   const slots = Array.from({ length: 6 }, (_, i) => selected[i] ?? null);
@@ -56,8 +88,8 @@ export function FrontDoor({ onStart }) {
           <div className="fd-kicker">PEHLA SHOW</div>
           <h1 className="fd-title">Meet your first audience.</h1>
           <p className="fd-sub">
-            Paste an episode and choose who watches. We seat a room of real listener types and
-            show you where the writing keeps them — and where it loses them — before the first show.
+            Paste an episode and cast who watches. We seat a room of real listener types and show
+            you where the writing keeps them — and where it loses them — before the first show.
           </p>
         </header>
 
@@ -73,37 +105,13 @@ export function FrontDoor({ onStart }) {
           />
         </section>
 
-        {/* 2 · THE AUDIENCE — six seats that fill as you pick */}
+        {/* 2 · THE AUDIENCE — drag from the library into your room (or click) */}
         <section className="fd-step">
           <div className="fd-step-head">
-            <div className="fd-step-label"><span className="fd-num">2</span> The audience</div>
+            <div className="fd-step-label"><span className="fd-num">2</span> Cast the room</div>
             <div className={`fd-count${ready ? ' is-ready' : ''}`}>{selected.length} of 6 · 5 seats each</div>
           </div>
-
-          <div className="fd-slots" aria-label="Your chosen room">
-            {slots.map((id, i) => {
-              const p = id ? personaById.get(id) : null;
-              return (
-                <button
-                  type="button"
-                  key={i}
-                  className={`fd-slot${p ? ' is-filled' : ''}`}
-                  onClick={() => p && toggle(id)}
-                  title={p ? `Remove ${p.label}` : 'Empty seat'}
-                  disabled={!p}
-                >
-                  {p ? (
-                    <>
-                      <span className="fd-slot-name">{p.label}</span>
-                      <span className="fd-slot-hint">remove</span>
-                    </>
-                  ) : (
-                    <span className="fd-slot-empty">seat {i + 1}</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+          <p className="fd-hint">Drag a person into a seat — or just click. Click a seated person to send them home.</p>
 
           <div className="fd-quick">
             <span className="fd-quick-label">Start from a room</span>
@@ -119,49 +127,87 @@ export function FrontDoor({ onStart }) {
             ))}
           </div>
 
-          <div className="fd-browse">
-            <input
-              className="fd-search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search personas"
-              aria-label="Search personas"
-            />
-            <div className="fd-cats" aria-label="Categories">
-              {categories.map((id) => (
-                <button
-                  type="button"
-                  key={id}
-                  className={`fd-cat${category === id ? ' is-active' : ''}`}
-                  onClick={() => setCategory(id)}
-                >
-                  {categoryLabel[id] ?? titleCase(id)}
-                </button>
-              ))}
+          <div className="fd-cast">
+            {/* LEFT — the library */}
+            <div className="fd-library" onDragOver={allow} onDrop={dropInLibrary}>
+              <input
+                className="fd-search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search personas"
+                aria-label="Search personas"
+              />
+              <div className="fd-cats" aria-label="Categories">
+                {categories.map((id) => (
+                  <button
+                    type="button"
+                    key={id}
+                    className={`fd-cat${category === id ? ' is-active' : ''}`}
+                    onClick={() => setCategory(id)}
+                  >
+                    {categoryLabel[id] ?? titleCase(id)}
+                  </button>
+                ))}
+              </div>
+              <div className="fd-lib-list">
+                {filtered.map((p) => {
+                  const on = selected.includes(p.id);
+                  const full = !on && selected.length >= 6;
+                  return (
+                    <div
+                      key={p.id}
+                      className={`fd-lib-card${on ? ' is-on' : ''}${full ? ' is-full' : ''}`}
+                      draggable={!on && !full}
+                      onDragStart={(e) => dragStart(e, p.id, 'lib')}
+                      onClick={() => (on ? remove(p.id) : full ? null : (markCustom(), add(p.id)))}
+                      role="button"
+                      aria-pressed={on}
+                    >
+                      <span className="fd-mini"><Figure hair={hairFor(p.id)} /></span>
+                      <span className="fd-lib-body">
+                        <span className="fd-lib-name">{p.label}</span>
+                        <span className="fd-lib-meta">
+                          {p.is_calibrated ? `calibrated · ${p.calibrated_from} real walkouts` : 'variant'}
+                        </span>
+                      </span>
+                      <span className="fd-lib-act">{on ? 'seated' : full ? 'room full' : 'drag / click'}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          <div className="fd-grid" aria-label="Persona library">
-            {filtered.map((p) => {
-              const on = selected.includes(p.id);
-              const full = !on && selected.length >= 6;
-              return (
-                <button
-                  type="button"
-                  key={p.id}
-                  className={`fd-card${on ? ' is-on' : ''}`}
-                  onClick={() => toggle(p.id)}
-                  aria-pressed={on}
-                  disabled={full}
-                >
-                  <span className="fd-card-name">{p.label}</span>
-                  <span className="fd-card-ctx">{p.context}</span>
-                  <span className="fd-card-meta">
-                    {p.is_calibrated ? `calibrated · ${p.calibrated_from} real walkouts` : 'variant'}
-                  </span>
-                </button>
-              );
-            })}
+            {/* RIGHT — your room */}
+            <div className="fd-room">
+              <div className="fd-room-label">Your room</div>
+              <div className="fd-seats" onDragOver={allow} onDrop={dropInRoom}>
+                {slots.map((id, i) => {
+                  const p = id ? personaById.get(id) : null;
+                  return (
+                    <div
+                      key={i}
+                      className={`fd-seat${p ? ' is-filled' : ''}`}
+                      onDragOver={allow}
+                      onDrop={dropInRoom}
+                      draggable={!!p}
+                      onDragStart={(e) => p && dragStart(e, id, 'room')}
+                      onClick={() => p && (markCustom(), remove(id))}
+                      title={p ? `Remove ${p.label}` : 'Drop a persona here'}
+                    >
+                      {p ? (
+                        <>
+                          <span className="fd-mini"><Figure hair={hairFor(id)} /></span>
+                          <span className="fd-seat-name">{p.label}</span>
+                          <span className="fd-seat-x">remove</span>
+                        </>
+                      ) : (
+                        <span className="fd-seat-empty">seat {i + 1}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -170,7 +216,7 @@ export function FrontDoor({ onStart }) {
             Open the doors
           </button>
           <span className="fd-foot-hint">
-            {ready ? 'The room is ready.' : `Pick ${6 - selected.length} more to seat the room.`}
+            {ready ? 'The room is ready.' : `Cast ${6 - selected.length} more to fill the room.`}
           </span>
         </div>
       </div>
