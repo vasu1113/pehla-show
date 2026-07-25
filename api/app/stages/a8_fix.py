@@ -28,6 +28,15 @@ def classify_change(before: list[int], after: list[int]) -> str:
     if len(after) != len(before) or set(after) != set(before) or after == before:
         return "invalid"
 
+    # If removing some single beat from both lists makes them equal, `after`
+    # is `before` with exactly one beat relocated. That is a valid move.
+    #
+    # More than one candidate does NOT mean more than one move — it means the
+    # move was short enough to be ambiguous about which neighbour travelled.
+    # Swapping adjacent beats reads as "move 2 earlier" or "move 1 later"; it
+    # is one move either way. Requiring a unique candidate here rejected every
+    # minimal nudge, so "move the reveal slightly earlier" — exactly the kind
+    # of fix the room recommends — failed twice and killed the fix path.
     moved_ids = [
         beat_id
         for beat_id in before
@@ -36,7 +45,7 @@ def classify_change(before: list[int], after: list[int]) -> str:
             == [candidate for candidate in after if candidate != beat_id]
         )
     ]
-    return "move" if len(moved_ids) == 1 else "invalid"
+    return "move" if moved_ids else "invalid"
 
 
 def _invalid_order_reason(before: list[int], after: list[int]) -> str:

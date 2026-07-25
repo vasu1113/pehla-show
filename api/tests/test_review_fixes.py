@@ -18,6 +18,7 @@ from app.models import (
     NoteType,
 )
 from app.stages.a6_experts import _populate_relationships, _relation
+from app.stages.a8_fix import classify_change
 
 
 def _note(agent: AgentId, note_type: NoteType, beat_id: int = 1) -> Note:
@@ -130,3 +131,43 @@ def test_selecting_a_subset_works() -> None:
 def test_entirely_unknown_cohorts_are_an_error_not_an_empty_hall() -> None:
     with pytest.raises(ValueError):
         pipeline._load_personas(["not_a_cohort"])
+
+
+# ── the fix validator ─────────────────────────────────────────────────────
+
+
+@pytest.mark.parametrize(
+    "after",
+    [
+        [0, 2, 1, 3, 4],  # adjacent swap — one move, ambiguous which beat
+        [1, 0, 2, 3, 4],
+        [0, 4, 1, 2, 3],  # a long move
+        [3, 0, 1, 2, 4],
+    ],
+)
+def test_a_single_move_is_accepted_however_short(after: list[int]) -> None:
+    """A minimal nudge is still one move.
+
+    Requiring a unique candidate rejected every adjacent swap, so "move the
+    reveal slightly earlier" — the kind of fix the room actually recommends —
+    failed twice and took the fix path down with it.
+    """
+    assert classify_change([0, 1, 2, 3, 4], after) == "move"
+
+
+def test_a_single_cut_is_accepted() -> None:
+    assert classify_change([0, 1, 2, 3, 4], [0, 1, 3, 4]) == "cut"
+
+
+@pytest.mark.parametrize(
+    "after",
+    [
+        [0, 1, 2, 3, 4],  # nothing changed — a fix has to do something
+        [4, 3, 2, 1, 0],  # wholesale rewrite
+        [1, 0, 3, 2, 4],  # two moves
+        [0, 1, 4],  # two cuts
+        [0, 1, 1, 3, 4],  # duplicated id
+    ],
+)
+def test_anything_larger_than_one_edit_is_rejected(after: list[int]) -> None:
+    assert classify_change([0, 1, 2, 3, 4], after) == "invalid"

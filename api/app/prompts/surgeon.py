@@ -42,7 +42,8 @@ Return the new order of chunks as a list of the existing chunk ids.
 The rules, and they are absolute:
 
 - Exactly ONE of the following. Move one chunk to a new position, or remove one \
-chunk. Nothing else.
+chunk. Nothing else. The move may be as small as one position or as large as \
+the whole episode — what matters is that only one chunk moves.
 - Every other chunk keeps its id and its relative order.
 - Do not merge chunks. Do not split a chunk. Do not reword any text. Do not \
 renumber anything.

@@ -189,9 +189,14 @@ def test_classify_change_recognises_a_single_cut() -> None:
 @pytest.mark.parametrize(
     ("before", "after"),
     [
-        ([0, 1, 2, 3], [0, 2, 1, 3]),
+        # ([0, 1, 2, 3], [0, 2, 1, 3]) used to be here, on my instruction that
+        # "a reordering of two elements" is invalid. That was wrong: swapping
+        # adjacent beats IS a single move — it just reads equally as "move 2
+        # earlier" or "move 1 later". See test_review_fixes.py.
         ([0, 1, 2, 3], [0, 1, 1, 3]),
         ([0, 1, 2, 3], [8, 9]),
+        ([0, 1, 2, 3], [3, 2, 1, 0]),
+        ([0, 1, 2, 3], [1, 0, 3, 2]),
     ],
 )
 def test_classify_change_rejects_nonminimal_changes(
