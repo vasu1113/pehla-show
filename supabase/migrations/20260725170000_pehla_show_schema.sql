@@ -9,9 +9,9 @@ create table public.scripts (
 );
 
 create table public.runs (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key check (id ~ '^run_[0-9a-f]{6}$'),
   script_id uuid not null references public.scripts(id) on delete cascade,
-  parent_run_id uuid references public.runs(id) on delete set null,
+  parent_run_id text references public.runs(id) on delete set null,
   variant text not null default 'original' check (variant in ('original', 'fixed')),
   status text not null default 'analysing' check (status in ('analysing', 'ready', 'error')),
   result_json jsonb,
@@ -33,6 +33,7 @@ create table public.personas (
   label text not null,
   context text,
   start_patience double precision not null,
+  seat_count integer not null default 5,
   sensitivity jsonb not null,
   replenish jsonb not null,
   calibrated_from integer default 0
