@@ -49,6 +49,16 @@ export function normalizeRun(rawRun) {
   };
 }
 
+/**
+ * Install a run produced client-side (from the six chosen personas) as the one
+ * every panel reads. Called before the screening mounts, so consumers pick it
+ * up on mount. Not normalised — the simulator already emits a theatre-ready run.
+ */
+export function setActiveRun(run) {
+  cache = run;
+  inflight = Promise.resolve(run);
+}
+
 export function useRun() {
   const [run, setRun] = useState(cache);
   const [status, setStatus] = useState(cache ? 'ready' : 'loading');

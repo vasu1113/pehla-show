@@ -8,9 +8,13 @@ import { clock, useClock } from './clock/useClock';
 import { FrontDoor } from './components/FrontDoor/FrontDoor';
 import { EntryTheatre } from './components/EntryTheatre/EntryTheatre';
 import { PostScreen } from './components/PostScreen/PostScreen';
+import personaData from './data/personas.json';
+import { simulateRun } from './data/simulateRun';
+import { setActiveRun } from './data/useRun';
 import './App.css';
 
 const ENTRY_SECONDS = 18;
+const personaById = new Map(personaData.map((p) => [p.id, p]));
 
 export default function App() {
   const [phase, setPhase] = useState('intro');
@@ -18,7 +22,14 @@ export default function App() {
   const { currentSeconds, duration, isPlaying } = useClock();
   const { total } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
 
-  const enterTheatre = useCallback(() => {
+  const enterTheatre = useCallback((payload) => {
+    // Cast → analytics: build the run from the six chosen personas before the
+    // screening mounts, so the whole room + analytics reflect who's watching.
+    const ids = payload?.selected ?? [];
+    if (ids.length === 6) {
+      const chosen = ids.map((id) => personaById.get(id)).filter(Boolean);
+      if (chosen.length === 6) setActiveRun(simulateRun(chosen));
+    }
     clock.pause();
     clock.setDuration(ENTRY_SECONDS);
     clock.rewind();
