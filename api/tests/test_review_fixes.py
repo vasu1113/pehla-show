@@ -9,8 +9,9 @@ from __future__ import annotations
 import pytest
 
 import asyncio
+from pathlib import Path
 
-from app import config, pipeline
+from app import config, pipeline, store
 from app.models import (
     AgentId,
     Beat,
@@ -22,6 +23,28 @@ from app.models import (
 )
 from app.stages.a6_experts import _populate_relationships, _relation
 from app.stages.a8_fix import classify_change
+
+
+@pytest.fixture(autouse=True)
+def isolated_runs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Never write to the real run store.
+
+    This file drives the actual pipeline, and without this it persisted test
+    runs into api/.runs — which wiped the pinned demo runs while leaving
+    pinned.json pointing at them. At hour 20 that is the demo silently losing
+    its insurance.
+    """
+    monkeypatch.setattr(config, "RUNS_DIR", tmp_path)
+    monkeypatch.setattr(config, "LLM_BACKEND", "fake")
+    saved_runs = dict(store._runs)
+    saved_pins = dict(store._pinned)
+    store._runs.clear()
+    store._pinned.clear()
+    yield
+    store._runs.clear()
+    store._runs.update(saved_runs)
+    store._pinned.clear()
+    store._pinned.update(saved_pins)
 
 
 def _note(agent: AgentId, note_type: NoteType, beat_id: int = 1) -> Note:

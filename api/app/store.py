@@ -136,8 +136,24 @@ def pin(run_id: str, content_hash: str) -> None:
 
 
 def list_pinned() -> list[str]:
+    """Only pins that actually resolve to a stored run.
+
+    A pin whose run has gone is worse than no pin: /analyse falls through and
+    re-runs the pipeline, while /health cheerfully reports the demo is
+    insured. The header dot has to be able to be wrong out loud.
+    """
     with _lock:
-        return sorted(set(_pinned.values()))
+        return sorted({
+            run_id for run_id in _pinned.values() if run_id in _runs
+        })
+
+
+def dangling_pins() -> list[str]:
+    """Pins pointing at runs that no longer exist. Should always be empty."""
+    with _lock:
+        return sorted({
+            run_id for run_id in _pinned.values() if run_id not in _runs
+        })
 
 
 _load()
