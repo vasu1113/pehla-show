@@ -1,0 +1,133 @@
+.analysis-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  background: var(--ink);
+}
+
+.an-head {
+  padding: 14px 16px 10px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  border-bottom: 1px solid var(--bone-faint);
+}
+
+.an-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ── scorecard ──────────────────────────────────────────────── */
+.an-scorecard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.an-tile {
+  border: 1px solid var(--bone-faint);
+  border-radius: 3px;
+  padding: 9px 10px;
+  background: var(--ink-lift);
+}
+
+.an-tile--hero {
+  grid-column: 1 / -1;
+}
+
+.an-tile-val {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--bone);
+  font-variant-numeric: tabular-nums;
+}
+
+.an-tile-val--sm {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.an-tile-cap {
+  margin-top: 6px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  color: var(--bone-dim);
+}
+
+/* ── chart blocks ───────────────────────────────────────────── */
+.an-block { display: flex; flex-direction: column; gap: 8px; }
+
+.an-label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+}
+
+.an-svg { width: 100%; height: auto; }
+
+.an-grid { stroke: var(--bone-faint); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.an-tick { fill: var(--bone-faint); font-family: ui-monospace, Menlo, monospace; font-size: 7px; }
+
+.an-line {
+  fill: none;
+  stroke: var(--bone);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.an-line--thin { stroke-width: 1.5; stroke: var(--bone-dim); }
+
+.an-marker { stroke: var(--bone-dim); stroke-width: 1; opacity: 0.55; vector-effect: non-scaling-stroke; }
+
+/* the walkout cliffs — the single allowed use of the burnt red */
+.an-dot {
+  fill: var(--alert);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  cursor: pointer;
+}
+.an-dot:hover { stroke: var(--bone); }
+
+/* ── small multiples ────────────────────────────────────────── */
+.an-multiples {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+}
+
+.an-mult-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 2px;
+}
+
+.an-mult-type {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--bone-dim);
+}
+
+.an-mult-val {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  color: var(--bone);
+  font-variant-numeric: tabular-nums;
+}
+
+.an-spark { width: 100%; height: 34px; }

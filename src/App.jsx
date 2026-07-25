@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { FilmStrip } from './film/FilmStrip';
 import { ScriptPane } from './components/ScriptPane';
+import { AnalysisPanel } from './analysis/AnalysisPanel';
 import { AudienceLayer } from './audience/AudienceLayer';
 import { CriticBoxes } from './critics/CriticsBalcony';
 import { FILM_CHUNKS, buildTimeline, chunkAtTime } from './film/filmData';
@@ -12,6 +13,8 @@ import './App.css';
 export default function App() {
   // Bumping this remounts the audience layer, replaying the arrivals.
   const [arrivalKey, setArrivalKey] = useState(0);
+  // Left column shows the script or the analysis backbone.
+  const [leftTab, setLeftTab] = useState('script');
   const { currentSeconds, duration, speed, isPlaying } = useClock();
 
   const { timed } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
@@ -25,8 +28,24 @@ export default function App() {
       </header>
 
       <div className="show-body">
-        {/* Left column — the script (B3), about a third. */}
-        <ScriptPane />
+        {/* Left column — script (B3) or the analysis backbone, toggled. */}
+        <div className="left-col">
+          <div className="left-tabs">
+            <button
+              className={`left-tab${leftTab === 'script' ? ' is-active' : ''}`}
+              onClick={() => setLeftTab('script')}
+            >
+              SCRIPT
+            </button>
+            <button
+              className={`left-tab${leftTab === 'analysis' ? ' is-active' : ''}`}
+              onClick={() => setLeftTab('analysis')}
+            >
+              ANALYSIS
+            </button>
+          </div>
+          {leftTab === 'script' ? <ScriptPane /> : <AnalysisPanel />}
+        </div>
 
         {/* Right column — the cinema: screen (B5) on top, audience below. */}
         <div className="show-right">

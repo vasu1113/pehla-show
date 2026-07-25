@@ -37,6 +37,44 @@
   grid-template-columns: minmax(280px, 34%) 1fr;
 }
 
+/* Left column wrapper: tab bar + the script or analysis panel. */
+.left-col {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--bone-faint);
+}
+
+.left-col > .script-pane,
+.left-col > .analysis-panel {
+  flex: 1;
+  min-height: 0;
+}
+
+.left-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--bone-faint);
+  flex: 0 0 auto;
+}
+
+.left-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--bone-dim);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  padding: 9px 8px;
+  cursor: pointer;
+}
+
+.left-tab.is-active {
+  color: var(--bone);
+  border-bottom-color: var(--bone);
+}
+
 .show-right {
   min-height: 0;
   overflow: hidden;

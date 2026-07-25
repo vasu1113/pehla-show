@@ -3,7 +3,6 @@
   flex-direction: column;
   min-height: 0;
   height: 100%;
-  border-right: 1px solid var(--bone-faint);
   background: var(--ink);
 }
 
