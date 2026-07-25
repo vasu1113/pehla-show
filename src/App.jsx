@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
-import Theatre from './Theatre';
 import { FilmStrip } from './film/FilmStrip';
 import { ScriptPane } from './components/ScriptPane';
+import { AudienceLayer } from './audience/AudienceLayer';
 import { FILM_CHUNKS, buildTimeline, chunkAtTime } from './film/filmData';
 import { PlaybackBar } from './components/PlaybackBar';
 import { useClock } from './clock/useClock';
@@ -9,7 +9,8 @@ import { formatTime } from './clock/format';
 import './App.css';
 
 export default function App() {
-  const [showIndex, setShowIndex] = useState(false);
+  // Bumping this remounts the audience layer, replaying the arrivals.
+  const [arrivalKey, setArrivalKey] = useState(0);
   const { currentSeconds, duration, speed, isPlaying } = useClock();
 
   const { timed } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
@@ -26,16 +27,20 @@ export default function App() {
         {/* Left column — the script (B3), about a third. */}
         <ScriptPane />
 
-        {/* Right column — the cinema: screen (B5) on top, seats below. */}
+        {/* Right column — the cinema: screen (B5) on top, audience below. */}
         <div className="show-right">
           <div className="screen-wrap">
             <FilmStrip />
           </div>
-          <Theatre showIndex={showIndex} />
+
+          {/* NX1 — Track-B prototype audience (Track A's Theatre.jsx untouched,
+              reconciled at wire-in). key replays the arrivals. */}
+          <AudienceLayer key={arrivalKey} />
+
           <div className="caption">
-            <span>the screen + 30 seats</span>
-            <button className="ghost-btn" onClick={() => setShowIndex((v) => !v)}>
-              {showIndex ? 'hide' : 'show'} seat numbers
+            <span>the screen + 30 listeners</span>
+            <button className="ghost-btn" onClick={() => setArrivalKey((k) => k + 1)}>
+              replay arrivals
             </button>
           </div>
         </div>
