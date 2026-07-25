@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import presets from '../../data/presets.json';
 import { Figure } from '../../audience/Figure';
 import { usePersonaLibrary } from '../../data/usePersonaLibrary';
+import hindiDemoScript from '../../../test-scripts/raat-ki-raseed-hindi.txt?raw';
 import './FrontDoor.css';
 
 const categoryLabel = {
@@ -32,6 +33,9 @@ export function FrontDoor({ onStart }) {
   const [category, setCategory] = useState('all');
   const [query, setQuery] = useState('');
   const [script, setScript] = useState('');
+  const [dragging, setDragging] = useState(false);
+  const [spotlight, setSpotlight] = useState({ x: -500, y: -500, visible: false, tone: 'warm' });
+  const [scrollDepth, setScrollDepth] = useState(0);
 
   const byId = useMemo(() => new Map(personas.map((p) => [p.id, p])), [personas]);
   const seatable = (id) => byId.get(id)?.seeded === true;
@@ -62,7 +66,11 @@ export function FrontDoor({ onStart }) {
   };
 
   // drag + click both work
-  const dragStart = (e, id, from) => e.dataTransfer.setData('text/plain', JSON.stringify({ id, from }));
+  const dragStart = (e, id, from) => {
+    setDragging(true);
+    e.dataTransfer.setData('text/plain', JSON.stringify({ id, from }));
+  };
+  const dragEnd = () => setDragging(false);
   const allow = (e) => e.preventDefault();
   const payload = (e) => {
     try {
@@ -73,6 +81,7 @@ export function FrontDoor({ onStart }) {
   };
   const dropInRoom = (e) => {
     e.preventDefault();
+    setDragging(false);
     const d = payload(e);
     if (d?.from === 'lib') {
       markCustom();
@@ -81,6 +90,7 @@ export function FrontDoor({ onStart }) {
   };
   const dropInLibrary = (e) => {
     e.preventDefault();
+    setDragging(false);
     const d = payload(e);
     if (d?.from === 'room') {
       markCustom();
@@ -90,29 +100,61 @@ export function FrontDoor({ onStart }) {
 
   const slots = Array.from({ length: 6 }, (_, i) => selected[i] ?? null);
   const ready = selected.length === 6;
+  const trackLight = (event) => setSpotlight((current) => ({ ...current, x: event.clientX - 260, y: event.clientY - 260, visible: true }));
+  const setLightTone = (tone) => setSpotlight((current) => ({ ...current, tone }));
+  const beamProgress = Math.min(scrollDepth / 900, 1);
 
   return (
-    <main className="fd">
+    <main
+      className="fd"
+      onPointerMove={trackLight}
+      onPointerLeave={() => setSpotlight((current) => ({ ...current, visible: false }))}
+      onScroll={(event) => setScrollDepth(event.currentTarget.scrollTop)}
+    >
+      <div
+        aria-hidden="true"
+        className={`fd-spotlight fd-spotlight--${spotlight.tone}`}
+        style={{ transform: `translate3d(${spotlight.x}px, ${spotlight.y}px, 0)`, opacity: spotlight.visible ? 1 : 0 }}
+      />
+      <div
+        aria-hidden="true"
+        className="fd-scroll-spotlight"
+        style={{
+          transform: `translate3d(-50%, ${Math.min(scrollDepth * 0.045, 68)}px, 0) scaleX(${(0.58 + beamProgress * 0.96).toFixed(3)})`,
+          opacity: (0.26 + beamProgress * 0.35).toFixed(2),
+        }}
+      />
       <div className="fd-inner">
         <header className="fd-head">
-          <div className="fd-kicker">PEHLA SHOW</div>
+          <div className="fd-edition"><span>PEHLA SHOW</span><span>SCREENING DRAFT · 01</span></div>
           <h1 className="fd-title">Meet your first audience.</h1>
           <p className="fd-sub">
             Paste an episode and cast who watches. We seat a room of real listener types and show
             you where the writing keeps them — and where it loses them — before the first show.
           </p>
+          <div className="fd-reel" aria-hidden="true"><i /><i /><i /></div>
         </header>
 
         {/* 1 · THE SCRIPT — paste only, always .txt */}
         <section className="fd-step">
           <div className="fd-step-label"><span className="fd-num">1</span> The script</div>
-          <textarea
-            className="fd-script"
-            value={script}
-            onChange={(e) => setScript(e.target.value)}
-            placeholder="Paste your episode here. Plain text — that's all it needs."
-            spellCheck={false}
-          />
+          <div className="fd-script-desk">
+            <div className="fd-script-meta">
+              <span>EPISODE MATERIAL</span>
+              <span className="fd-script-actions">
+                <button type="button" onClick={() => setScript(hindiDemoScript)}>LOAD HINDI DEMO</button>
+                <i>{script.trim() ? `${script.trim().split(/\s+/).length} WORDS` : 'AWAITING PAGES'}</i>
+              </span>
+            </div>
+            <textarea
+              className="fd-script"
+              value={script}
+              onChange={(e) => setScript(e.target.value)}
+              onFocus={() => setLightTone('paper')}
+              placeholder="Paste your episode here. Plain text — that's all it needs."
+              spellCheck={false}
+            />
+          </div>
         </section>
 
         {/* 2 · CAST THE ROOM — drag from the library into your room (or click) */}
@@ -140,6 +182,7 @@ export function FrontDoor({ onStart }) {
           <div className="fd-cast">
             {/* LEFT — the library */}
             <div className="fd-library" onDragOver={allow} onDrop={dropInLibrary}>
+              <div className="fd-library-heading"><span>Audience cards</span><small>{filtered.length} of {personas.length} profiles</small></div>
               <input
                 className="fd-search"
                 value={query}
@@ -168,8 +211,11 @@ export function FrontDoor({ onStart }) {
                     <div
                       key={p.id}
                       className={`fd-lib-card${on ? ' is-on' : ''}${!canSeat ? ' is-locked' : full ? ' is-full' : ''}`}
+                      data-category={p.category}
                       draggable={canSeat && !on && !full}
                       onDragStart={(e) => canSeat && dragStart(e, p.id, 'lib')}
+                      onDragEnd={dragEnd}
+                      onPointerEnter={() => setLightTone(p.category ?? 'warm')}
                       onClick={() => (!canSeat ? null : on ? remove(p.id) : full ? null : (markCustom(), add(p.id)))}
                       role="button"
                       aria-pressed={on}
@@ -193,18 +239,20 @@ export function FrontDoor({ onStart }) {
 
             {/* RIGHT — your room */}
             <div className="fd-room">
-              <div className="fd-room-label">Your room</div>
+              <div className="fd-room-screen"><span>TONIGHT’S ROOM</span><small>FIVE SEATS EACH</small></div>
+              <div className="fd-room-label">Cast of six</div>
               <div className="fd-seats" onDragOver={allow} onDrop={dropInRoom}>
                 {slots.map((id, i) => {
                   const p = id ? byId.get(id) : null;
                   return (
                     <div
                       key={i}
-                      className={`fd-seat${p ? ' is-filled' : ''}`}
+                      className={`fd-seat${p ? ' is-filled' : ''}${!p && dragging ? ' is-drop' : ''}`}
                       onDragOver={allow}
                       onDrop={dropInRoom}
                       draggable={!!p}
                       onDragStart={(e) => p && dragStart(e, id, 'room')}
+                      onDragEnd={dragEnd}
                       onClick={() => p && (markCustom(), remove(id))}
                       title={p ? `Remove ${p.label}` : 'Drop a persona here'}
                     >

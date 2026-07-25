@@ -187,8 +187,10 @@
   opacity: 0.5;
 }
 
-/* the popcorn throw */
+/* A peak reaction — warm, physical and deliberately tiny. */
 .popcorn-arc { position: absolute; pointer-events: none; z-index: 260; }
+.popcorn-arc--walkout { z-index: 265; }
+.popcorn-seat-glow { position: absolute; left: 50%; bottom: -6px; width: 42px; height: 24px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(ellipse, rgba(255,209,115,.42), transparent 70%); }
 .kernel {
   position: absolute;
   width: 4px;
@@ -197,6 +199,8 @@
   background: var(--beam);
   box-shadow: 0 0 2px rgba(255, 246, 224, 0.6);
 }
+.popcorn-toss { position: absolute; z-index: 265; pointer-events: none; }.popcorn-cup { position: absolute; width: 10px; height: 12px; transform-origin: 50% 100%; border: 1px solid #f2d19a; border-radius: 1px 1px 4px 4px; background: repeating-linear-gradient(90deg, #9e1a24 0 2px, #f0d9ae 2px 4px); box-shadow: 0 1px 4px rgba(0,0,0,.42); }
+.popcorn-thought { position: absolute; z-index: 270; pointer-events: none; }.popcorn-thought span { position: absolute; bottom: 60px; left: 50%; width: max-content; max-width: 154px; padding: 6px 10px; transform: translateX(-50%); border: 1px solid rgba(255,215,139,.72); background: rgba(39,25,12,.94); color: #ffe5b4; box-shadow: 0 4px 16px rgba(0,0,0,.34); font: 10px/1.35 ui-monospace, Menlo, monospace; text-align: center; }.popcorn-thought span::after { content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(39,25,12,.94); }
 
 @media (prefers-reduced-motion: reduce) {
   .seat-slot { animation: none; }

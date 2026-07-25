@@ -23,14 +23,10 @@ export const CRITICS = [
   { id: 3, name: 'K. VELU', lens: 'CHARACTER', side: 'right', row: 1 },
 ];
 
-// The critics' INITIAL opinions — pre-film takes, before a single scene plays.
-// Staggered at the very start; the first is visible even while paused at 0.
+// The critics' opening take — one voice at a time; the audience fills the
+// silence between analytical observations.
 const INITIALS = [
   { critic: 0, text: 'Promo sold a thriller. Structurally, thrillers live or die in act one.' },
-  { critic: 1, text: 'Ninety seconds to hook me. A serial gets less.' },
-  { critic: 2, text: 'Friday slot. It has to hold a distracted living room.' },
-  { critic: 3, text: 'Give me one person I understand in the first scene.' },
-  { critic: 4, text: 'Another debt drama. Show me why this one is different.' },
 ];
 
 // In-film notes. { critic, chunk index, seconds into the chunk, duration, text }.
@@ -42,12 +38,8 @@ const NOTES = [
     text: 'Scene 5’s ledger is the true inciting incident — and it lands two scenes late.' },
   { critic: 4, chunk: 5, at: 2, dur: 3.2,
     text: 'Scene 6 makes the debt communal. That is the show’s real spine.' },
-  // --- the disagreement, on THE CLIFF (scene 7), overlapping in time ---
-  { critic: 1, chunk: 6, at: 1.2, dur: 3.6,
+  { critic: 1, chunk: 6, at: 3.1, dur: 2.1,
     text: 'Scene 7’s cut to black earns the act break. Keep it.' },
-  { critic: 0, chunk: 6, at: 2, dur: 3.4,
-    text: 'Disagree — scene 7’s cliff is unearned. Nothing sets up who is at the door.' },
-  // ---------------------------------------------------------------------
   { critic: 1, chunk: 8, at: 3, dur: 3.2,
     text: 'Scene 9 holds its silence too long for television.' },
   { critic: 0, chunk: 10, at: 2, dur: 3.2,
@@ -71,10 +63,9 @@ export function buildCriticSchedule(timed) {
   let uid = 0;
   const total = timed.length ? timed[timed.length - 1].end : 0;
 
-  // Initial opinions, staggered near the start (first one starts before 0 so
-  // it is already visible when the clock sits paused at 0).
+  // Opening take starts with the first frame; no competing voices.
   INITIALS.forEach((n, i) => {
-    const start = -0.6 + i * 1.8;
+    const start = 0.12 + i * 3.4;
     events.push({ id: uid++, criticId: n.critic, text: n.text, start, end: start + 2.8, initial: true });
   });
 
@@ -97,17 +88,8 @@ export function buildCriticSchedule(timed) {
   return events;
 }
 
-/** Active critic notes at time t — at most one per critic (so the balcony never
- *  stacks two bubbles on one seat), but different critics CAN overlap (that is
- *  how the disagreement shows). Pure function of the clock → scrub-exact. */
+/** The entire room gets one speaker at a time. Pure function of the clock. */
 export function activeCriticNotes(schedule, t) {
-  const byCritic = new Map();
-  for (const e of schedule) {
-    if (t >= e.start && t < e.end) byCritic.set(e.criticId, e);
-  }
-  const out = [];
-  for (const e of byCritic.values()) {
-    out.push({ event: e, opacity: thoughtOpacity(e, t) });
-  }
-  return out;
+  const event = schedule.find((item) => t >= item.start && t < item.end);
+  return event ? [{ event, opacity: thoughtOpacity(event, t) }] : [];
 }

@@ -58,9 +58,9 @@ export default function App() {
     <main className="screening-view">
       <div className="screening-film"><FilmStrip /></div>
       <div className="screening-house">
-        <CriticBoxes side="left" silent />
+        <CriticBoxes side="left" />
         <AudienceLayer key={audienceKey} entered />
-        <CriticBoxes side="right" silent />
+        <CriticBoxes side="right" />
       </div>
       {phase === 'screening' && currentSeconds >= 4 && <PlaybackBar />}
     </main>

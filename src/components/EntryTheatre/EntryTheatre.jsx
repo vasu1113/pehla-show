@@ -29,9 +29,12 @@ export function EntryTheatre() {
         <span>{bridge ? bridgeLine : 'THE SCREEN IS WAITING'}</span>
         {bridge && <small>projection begins when the room is ready</small>}
       </div>
-      <div className="entry-doors" aria-hidden="true">
-        <span style={{ transform: `translateX(${-50 * door}%)` }} />
-        <span style={{ transform: `translateX(${50 * door}%)` }} />
+      <div className="entry-proscenium" aria-hidden="true">
+        <div className="entry-valance"><i /><i /><i /><i /><i /></div>
+        <div className="entry-curtains">
+          <span className="entry-curtain entry-curtain--left" style={{ transform: `translateX(${-98 * door}%)` }} />
+          <span className="entry-curtain entry-curtain--right" style={{ transform: `translateX(${98 * door}%)` }} />
+        </div>
       </div>
       <div className="entry-floor">
         {people.map((person) => {

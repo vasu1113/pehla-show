@@ -7,6 +7,7 @@ import { useClock } from '../clock/useClock';
 import { FILM_CHUNKS, buildTimeline } from '../film/filmData';
 import { stateFor, ease } from '../figures';
 import { useHighlight } from '../highlight/highlightStore';
+import { buildCriticSchedule, activeCriticNotes } from '../critics/criticsData';
 import './AudienceLayer.css';
 
 /**
@@ -161,23 +162,27 @@ function VerdictBubbles({ people, total }) {
   );
 }
 
-/** B6 — the popcorn throw, from the fed-up people who stayed to throw it. */
+/** A rare shared-peak reaction: three people, one line, a few kernels in beam. */
 function Popcorn({ people, timed, total, currentSeconds }) {
   const extreme = timed.find(
-    (chunk) => chunk.tension >= 0.9 && currentSeconds >= chunk.start && currentSeconds <= chunk.start + 1.2,
+    (chunk) => chunk.tension >= 0.9 && currentSeconds >= chunk.start + 0.45 && currentSeconds <= chunk.start + 2.15,
   );
+  const peakIndex = extreme ? timed.indexOf(extreme) : -1;
   const prog = extreme
-    ? (currentSeconds - extreme.start) / 1.2
+    ? (currentSeconds - extreme.start - 0.45) / 1.7
     : popcornProgress(currentSeconds - timed[timed.length - 1].end);
   if (prog === null) return null;
 
-  const throwers = people.filter(
-    (p) => p.verdict === 'popcorn' && (p.leftAtSec == null || p.leftAtSec >= total),
-  );
+  const eligible = people.filter((p) => p.leftAtSec == null || p.leftAtSec >= currentSeconds);
+  const throwers = extreme
+    ? eligible.filter((p) => (p.id + peakIndex * 3) % 4 === 0).slice(0, 3)
+    : eligible.filter((p) => p.verdict === 'popcorn' && (p.leftAtSec == null || p.leftAtSec >= total));
+  const speaker = throwers[0];
   return (
     <>
       {throwers.map((p) => (
         <div key={p.id} className="popcorn-arc" style={{ left: `${p.fl}%`, top: `${p.ft}%` }}>
+          {extreme && <span className="popcorn-seat-glow" style={{ opacity: Math.min(1, prog * 2, (1 - prog) * 2.8) }} />}
           {[0, 1, 2, 3, 4].map((k) => {
             const t = Math.max(0, Math.min(1, prog * 1.25 - k * 0.12));
             const y = -t * 150; // fly up toward the screen
@@ -192,7 +197,44 @@ function Popcorn({ people, timed, total, currentSeconds }) {
           })}
         </div>
       ))}
+      {extreme && speaker && (
+        <div
+          className="popcorn-thought"
+          style={{ left: `${speaker.fl}%`, top: `${speaker.ft}%`, transform: `translate(-50%, -50%) scale(${speaker.scale})`, opacity: Math.min(1, prog * 2, (1 - prog) * 2.3) }}
+        >
+          <span>That reveal landed.</span>
+        </div>
+      )}
     </>
+  );
+}
+
+/** One angry walkout gets a physical beat before disappearing into the aisle. */
+function AngryWalkoutPopcorn({ people, currentSeconds }) {
+  const angry = people.find((person) => {
+    const { state } = stateFor(person.id, person.leftAtSec, currentSeconds);
+    return state === 'leaving' && /PACING|STAKES|HOOK|QUESTION/.test(person.reasonCode ?? '');
+  });
+  if (!angry) return null;
+  const { t } = stateFor(angry.id, angry.leftAtSec, currentSeconds);
+  // The cup leaves their hand early in the exit, travelling into the aisle —
+  // never through the middle of the seated audience.
+  const progress = Math.max(0, Math.min(1, t / 0.52));
+  const direction = angry.col < 3 ? -1 : 1;
+  const arc = Math.sin(progress * Math.PI) * 30;
+  const x = direction * (18 + progress * 74);
+  const y = -arc + progress * 16;
+
+  return (
+    <div className="popcorn-toss" style={{ left: `${angry.fl}%`, top: `${angry.ft}%` }}>
+      <span
+        className="popcorn-cup"
+        style={{
+          transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${(direction * (12 + progress * 82)).toFixed(1)}deg)`,
+          opacity: 1 - Math.max(0, (progress - 0.72) / 0.28),
+        }}
+      />
+    </div>
   );
 }
 
@@ -203,7 +245,10 @@ export function AudienceLayer({ entered = false }) {
   const { currentSeconds, duration } = useClock();
   const { people } = useRunAudience(duration);
   const { timed, total } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
+  const criticSchedule = useMemo(() => buildCriticSchedule(timed), [timed]);
   const inVerdict = currentSeconds >= total;
+  const peakReaction = timed.some((chunk) => chunk.tension >= 0.9 && currentSeconds >= chunk.start + 0.45 && currentSeconds <= chunk.start + 2.15);
+  const criticSpeaking = activeCriticNotes(criticSchedule, currentSeconds).length > 0;
   const highlight = useHighlight();
   const hasHighlight = Boolean(highlight.cohort || highlight.seats);
 
@@ -215,9 +260,10 @@ export function AudienceLayer({ entered = false }) {
     <div className="audience">
       <div className={`audience-floor${hasHighlight ? ' has-highlight' : ''}`}>
         <Figures people={people} currentSeconds={currentSeconds} total={total} entered={entered} highlight={highlight} />
-        {!inVerdict && <LiveThoughts people={people} currentSeconds={currentSeconds} />}
+        {!inVerdict && !peakReaction && !criticSpeaking && <LiveThoughts people={people} currentSeconds={currentSeconds} />}
         {inVerdict && <VerdictBubbles people={people} total={total} />}
-        <Popcorn people={people} timed={timed} total={total} currentSeconds={currentSeconds} />
+        {!criticSpeaking && <Popcorn people={people} timed={timed} total={total} currentSeconds={currentSeconds} />}
+        <AngryWalkoutPopcorn people={people} currentSeconds={currentSeconds} />
       </div>
 
       <div className="seated-count">

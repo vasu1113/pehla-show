@@ -46,14 +46,14 @@ export function CriticBoxes({ side, silent = false }) {
               <CriticFigure />
               <div className="box-rail" />
             </div>
-            <span className="box-tag">CRITIC</span>
+            <span className="box-tag">{cr.name} · {cr.lens}</span>
 
             {note && (
               <div
                 className={`critic-note critic-note--${side}`}
                 style={{ opacity: note.opacity }}
               >
-                <span className="cn-who">CRITIC</span>
+                <span className="cn-who">{cr.name} · {cr.lens}</span>
                 <span className="cn-text">{note.event.text}</span>
               </div>
             )}
