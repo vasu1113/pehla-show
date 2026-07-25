@@ -51,10 +51,20 @@ def _progress(
 def _load_personas(cohort_ids: list[str] | None = None) -> list[models.Persona]:
     raw = json.loads((config.DATA_DIR / "personas.json").read_text(encoding="utf-8"))
     personas = [models.Persona.model_validate(item) for item in raw["cohorts"]]
-    if cohort_ids is None:
+    # An explicit empty list is not a request for an empty hall — the contract
+    # says cohort_ids is optional and defaults to all six, so treat "none
+    # specified" the same either way rather than silently screening to nobody.
+    if not cohort_ids:
         return personas
+
     requested = set(cohort_ids)
-    return [persona for persona in personas if persona.id in requested]
+    selected = [persona for persona in personas if persona.id in requested]
+    if not selected:
+        raise ValueError(
+            f"No known cohorts in {sorted(requested)}; "
+            f"expected some of {sorted(p.id for p in personas)}."
+        )
+    return selected
 
 
 def _script_meta(

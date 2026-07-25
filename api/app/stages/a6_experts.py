@@ -151,12 +151,31 @@ async def run_expert(
     return notes
 
 
-def _opposed(first: NoteType, second: NoteType) -> bool:
-    return (
-        first in DEFENDING_NOTE_TYPES and second in ATTACKING_NOTE_TYPES
-    ) or (
-        first in ATTACKING_NOTE_TYPES and second in DEFENDING_NOTE_TYPES
-    )
+def _stance(note_type: NoteType) -> str:
+    """Where a note sits on the cut-versus-keep axis.
+
+    "off_axis" is a real third answer, not a fallback. The Director asking
+    whether a beat can be staged and the Psychologist asking whether a person
+    would behave that way are not arguing about whether to cut it — they are
+    observing a different dimension entirely.
+    """
+    if note_type in ATTACKING_NOTE_TYPES:
+        return "attack"
+    if note_type in DEFENDING_NOTE_TYPES:
+        return "defend"
+    return "off_axis"
+
+
+def _relation(first: NoteType, second: NoteType) -> str:
+    """agree | disagree | unrelated."""
+    a, b = _stance(first), _stance(second)
+    if a == "off_axis" or b == "off_axis":
+        # Treating these as agreement is how the room ends up claiming the
+        # Director endorsed a cut he never weighed in on — and, worse, agreeing
+        # with the Editor and the Historian at once while those two disagree
+        # with each other. Sharing a beat is not the same as sharing a view.
+        return "unrelated"
+    return "agree" if a == b else "disagree"
 
 
 def _populate_relationships(
@@ -171,18 +190,23 @@ def _populate_relationships(
             for peer in notes
             if peer.beat_id == note.beat_id and peer.agent_id != note.agent_id
         ]
-        disagrees = {
-            peer.agent_id.value
-            for peer in peers
-            if _opposed(note.note_type, peer.note_type)
-        }
-        agrees = {
-            peer.agent_id.value
-            for peer in peers
-            if peer.agent_id.value not in disagrees
-        }
+        disagrees = set()
+        agrees = set()
+        for peer in peers:
+            relation = _relation(note.note_type, peer.note_type)
+            if relation == "disagree":
+                disagrees.add(peer.agent_id.value)
+            elif relation == "agree":
+                agrees.add(peer.agent_id.value)
+
+        # The audience is not on the cut-versus-keep axis either — it only
+        # reports that it left. A note that argues the material earns its
+        # place is contradicted by people walking out on it.
         if note.beat_id in drop_beat_ids:
-            agrees.add("audience")
+            if _stance(note.note_type) == "defend":
+                disagrees.add("audience")
+            else:
+                agrees.add("audience")
 
         populated.append(
             note.model_copy(

@@ -4,7 +4,7 @@
   "parent_run_id": null,
   "variant": "original",
   "status": "ready",
-  "created_at": "2026-07-25T08:40:38+00:00",
+  "created_at": "2026-07-25T09:31:53+00:00",
   "script": {
     "id": "d552d8a1d5b0",
     "title": "Adhoori Baat, Episode 1",
@@ -1765,11 +1765,7 @@
       "evidence": "and so it had been for many years",
       "severity": 2,
       "agrees_with": [
-        "audience",
-        "critic",
-        "editor",
-        "historian",
-        "psychologist"
+        "audience"
       ],
       "disagrees_with": []
     },
@@ -1784,11 +1780,7 @@
       "evidence": "and so it had been for many years",
       "severity": 2,
       "agrees_with": [
-        "audience",
-        "critic",
-        "editor",
-        "historian",
-        "psychologist"
+        "audience"
       ],
       "disagrees_with": []
     },
@@ -1817,9 +1809,7 @@
       "severity": 3,
       "agrees_with": [
         "audience",
-        "critic",
-        "director",
-        "psychologist"
+        "critic"
       ],
       "disagrees_with": [
         "historian"
@@ -1837,9 +1827,7 @@
       "severity": 3,
       "agrees_with": [
         "audience",
-        "critic",
-        "director",
-        "psychologist"
+        "critic"
       ],
       "disagrees_with": [
         "historian"
@@ -1872,9 +1860,7 @@
       "severity": 2,
       "agrees_with": [
         "audience",
-        "director",
-        "editor",
-        "psychologist"
+        "editor"
       ],
       "disagrees_with": [
         "historian"
@@ -1892,9 +1878,7 @@
       "severity": 4,
       "agrees_with": [
         "audience",
-        "director",
-        "editor",
-        "psychologist"
+        "editor"
       ],
       "disagrees_with": [
         "historian"
@@ -1924,11 +1908,7 @@
       "evidence": "and so it had been for many years",
       "severity": 4,
       "agrees_with": [
-        "audience",
-        "critic",
-        "director",
-        "editor",
-        "historian"
+        "audience"
       ],
       "disagrees_with": []
     },
@@ -1943,11 +1923,7 @@
       "evidence": "and so it had been for many years",
       "severity": 5,
       "agrees_with": [
-        "audience",
-        "critic",
-        "director",
-        "editor",
-        "historian"
+        "audience"
       ],
       "disagrees_with": []
     },
@@ -1974,12 +1950,9 @@
       "text": "Historian note on chunk 12.",
       "evidence": "and so it had been for many years",
       "severity": 5,
-      "agrees_with": [
-        "audience",
-        "director",
-        "psychologist"
-      ],
+      "agrees_with": [],
       "disagrees_with": [
+        "audience",
         "critic",
         "editor"
       ]
@@ -1994,12 +1967,9 @@
       "text": "Historian note on chunk 16.",
       "evidence": "and so it had been for many years",
       "severity": 2,
-      "agrees_with": [
-        "audience",
-        "director",
-        "psychologist"
-      ],
+      "agrees_with": [],
       "disagrees_with": [
+        "audience",
         "critic",
         "editor"
       ]
