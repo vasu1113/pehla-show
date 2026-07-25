@@ -163,7 +163,7 @@ def test_personas_and_taxonomy_are_served_from_data(client: TestClient) -> None:
     taxonomy = client.get("/taxonomy")
 
     assert personas.status_code == 200
-    assert len(personas.json()["cohorts"]) == 6
+    assert len(personas.json()["personas"]) == 6
     assert taxonomy.status_code == 200
     assert len(taxonomy.json()["drain"]) == 10
     assert len(taxonomy.json()["refill"]) == 7

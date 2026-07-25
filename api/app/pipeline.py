@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 from datetime import datetime, timezone
 
 from app import cache, config, models, store
@@ -9,6 +8,7 @@ from app.blindfold import BlindfoldViolation
 from app.llm import LLM, get_llm
 from app.prompts.expert import LENSES as EXPERT_LENSES
 from app.stages import (
+    a0_cast,
     a1_parse,
     a2_score,
     a3_simulate,
@@ -49,23 +49,11 @@ def _progress(
     )
 
 
-def _load_personas(cohort_ids: list[str] | None = None) -> list[models.Persona]:
-    raw = json.loads((config.DATA_DIR / "personas.json").read_text(encoding="utf-8"))
-    personas = [models.Persona.model_validate(item) for item in raw["cohorts"]]
-    # An explicit empty list is not a request for an empty hall — the contract
-    # says cohort_ids is optional and defaults to all six, so treat "none
-    # specified" the same either way rather than silently screening to nobody.
-    if not cohort_ids:
-        return personas
-
-    requested = set(cohort_ids)
-    selected = [persona for persona in personas if persona.id in requested]
-    if not selected:
-        raise ValueError(
-            f"No known cohorts in {sorted(requested)}; "
-            f"expected some of {sorted(p.id for p in personas)}."
-        )
-    return selected
+def _load_personas(persona_ids: list[str] | None = None) -> list[models.Persona]:
+    if persona_ids:
+        return store.get_personas(persona_ids)
+    required = config.SEAT_COUNT // a0_cast.SEATS_PER_PERSONA
+    return store.list_personas()[:required]
 
 
 def _script_meta(
@@ -131,8 +119,8 @@ def _summary(
             models.Cohort(
                 id=persona.id,
                 label=persona.label,
-                context=persona.context,
-                seat_count=persona.seat_count,
+                context=persona.prompt,
+                seat_count=a0_cast.SEATS_PER_PERSONA,
                 retained_pct=retained,
             )
         )
@@ -168,6 +156,7 @@ async def _screen(
     list[models.DropEvent],
     list[models.Warning],
 ]:
+    cast = a0_cast.spawn_audience(personas)
     total_calls = len(personas)
     beats_total = len(beats) * total_calls
     _progress(
@@ -257,7 +246,9 @@ async def _screen(
             warnings,
         )
 
-    audience = a3_simulate.simulate_population(deltas, kept, beats)
+    kept_ids = {persona.id for persona in kept}
+    kept_cast = [member for member in cast if member[0].id in kept_ids]
+    audience = a3_simulate.simulate_population(deltas, kept_cast, beats)
     drops = a4_cliffs.detect_cliffs(audience, beats)
     return kept, audience, drops, warnings
 
@@ -266,7 +257,7 @@ async def analyse(
     run_id: str,
     raw_text: str,
     title: str,
-    cohort_ids: list[str] | None = None,
+    persona_ids: list[str] | None = None,
 ) -> models.Run:
     run = models.Run(
         run_id=run_id,
@@ -309,7 +300,7 @@ async def analyse(
 
     try:
         _progress(run_id, models.Stage.SEATING_AUDIENCE, 25)
-        personas = _load_personas(cohort_ids)
+        personas = _load_personas(persona_ids)
         kept, audience, drops, warnings = await _screen(
             run_id,
             beats,

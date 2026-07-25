@@ -1,552 +1,494 @@
 [
   {
-    "id": "commuter_calibrated",
-    "label": "Delhi Metro Commuter (Calibrated)",
-    "context": "Tuned in during peak rush hours on the Yellow Line.",
+    "id": "commuter",
+    "label": "Delhi Metro Commuter",
+    "prompt": "Tuned in during peak rush hours on the Yellow Line.",
     "category": "attention",
+    "language": "Hindi",
     "attention_span": "short",
-    "language": "Hindi",
-    "trope_appetite": "low",
-    "is_calibrated": true,
-    "calibrated_from": 850
+    "trope_appetite": "low"
   },
   {
-    "id": "kitchen_calibrated",
-    "label": "Kitchen Multitasker (Calibrated)",
-    "context": "Watching while frying onions or kneading dough.",
+    "id": "kitchen",
+    "label": "Kitchen Multitasker",
+    "prompt": "Watching while frying onions or kneading dough.",
     "category": "genre",
-    "attention_span": "medium",
     "language": "Hinglish",
-    "trope_appetite": "high",
-    "is_calibrated": true,
-    "calibrated_from": 620
+    "attention_span": "medium",
+    "trope_appetite": "high"
   },
   {
-    "id": "night_rider_calibrated",
-    "label": "Night Auto Rider (Calibrated)",
-    "context": "Engaged during breezy night-time auto-rickshaw journeys.",
+    "id": "night_rider",
+    "label": "Night Auto Rider",
+    "prompt": "Engaged during breezy night-time auto-rickshaw journeys.",
     "category": "genre",
-    "attention_span": "long",
     "language": "Hindi",
-    "trope_appetite": "medium",
-    "is_calibrated": true,
-    "calibrated_from": 940
+    "attention_span": "long",
+    "trope_appetite": "medium"
   },
   {
-    "id": "metro_pro_calibrated",
-    "label": "Gurgaon Professional (Calibrated)",
-    "context": "Unwinding after a 12-hour sprint in Cyber City.",
+    "id": "metro_pro",
+    "label": "Gurgaon Professional",
+    "prompt": "Unwinding after a 12-hour sprint in Cyber City.",
     "category": "language",
+    "language": "English",
     "attention_span": "medium",
-    "language": "English",
-    "trope_appetite": "low",
-    "is_calibrated": true,
-    "calibrated_from": 1050
+    "trope_appetite": "low"
   },
   {
-    "id": "sleep_calibrated",
-    "label": "Bedtime Bed Scroller (Calibrated)",
-    "context": "Fighting heavy eyelids under a warm blanket.",
+    "id": "sleep",
+    "label": "Bedtime Bed Scroller",
+    "prompt": "Fighting heavy eyelids under a warm blanket.",
     "category": "attention",
-    "attention_span": "short",
     "language": "Hinglish",
-    "trope_appetite": "low",
-    "is_calibrated": true,
-    "calibrated_from": 580
+    "attention_span": "short",
+    "trope_appetite": "low"
   },
   {
-    "id": "diaspora_calibrated",
-    "label": "London Diaspora Listener (Calibrated)",
-    "context": "Seeking comfort and nostalgic echoes of Delhi lanes.",
+    "id": "diaspora",
+    "label": "London Diaspora Listener",
+    "prompt": "Seeking comfort and nostalgic echoes of Delhi lanes.",
     "category": "context",
-    "attention_span": "long",
     "language": "English",
-    "trope_appetite": "medium",
-    "is_calibrated": true,
-    "calibrated_from": 730
+    "attention_span": "long",
+    "trope_appetite": "medium"
   },
   {
     "id": "cinephile_calibrated",
-    "label": "Arthouse Cinephile (Calibrated)",
-    "context": "Critically evaluating visual structure and subtext.",
+    "label": "Arthouse Cinephile",
+    "prompt": "Critically evaluating visual structure and subtext.",
     "category": "genre",
-    "attention_span": "long",
     "language": "Hindi",
-    "trope_appetite": "low",
-    "is_calibrated": true,
-    "calibrated_from": 1120
+    "attention_span": "long",
+    "trope_appetite": "low"
   },
   {
     "id": "critic_calibrated",
-    "label": "Indie Critic (Calibrated)",
-    "context": "Focusing on dialogue flow and commercial viability.",
+    "label": "Indie Critic",
+    "prompt": "Focusing on dialogue flow and commercial viability.",
     "category": "context",
-    "attention_span": "medium",
     "language": "English",
-    "trope_appetite": "low",
-    "is_calibrated": true,
-    "calibrated_from": 480
+    "attention_span": "medium",
+    "trope_appetite": "low"
   },
   {
     "id": "commuter_variant_0",
     "label": "COMMUTER Variant #0",
-    "context": "Variant of Delhi Metro Commuter (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Delhi Metro Commuter (Calibrated) with minor adjustments.",
     "category": "language",
-    "attention_span": "medium",
     "language": "Hindi",
+    "attention_span": "medium",
     "trope_appetite": "medium",
-    "is_calibrated": false,
-    "variant_of": "commuter_calibrated"
+    "variant_of": "commuter"
   },
   {
     "id": "kitchen_variant_1",
     "label": "KITCHEN Variant #1",
-    "context": "Variant of Kitchen Multitasker (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Kitchen Multitasker (Calibrated) with minor adjustments.",
     "category": "genre",
-    "attention_span": "long",
     "language": "Hindi",
+    "attention_span": "long",
     "trope_appetite": "high",
-    "is_calibrated": false,
-    "variant_of": "kitchen_calibrated"
+    "variant_of": "kitchen"
   },
   {
     "id": "night_rider_variant_2",
     "label": "NIGHT RIDER Variant #2",
-    "context": "Variant of Night Auto Rider (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Night Auto Rider (Calibrated) with minor adjustments.",
     "category": "attention",
-    "attention_span": "short",
     "language": "Hindi",
+    "attention_span": "short",
     "trope_appetite": "low",
-    "is_calibrated": false,
-    "variant_of": "night_rider_calibrated"
+    "variant_of": "night_rider"
   },
   {
     "id": "metro_pro_variant_3",
     "label": "METRO PRO Variant #3",
-    "context": "Variant of Gurgaon Professional (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Gurgaon Professional (Calibrated) with minor adjustments.",
     "category": "context",
-    "attention_span": "medium",
     "language": "Hindi",
+    "attention_span": "medium",
     "trope_appetite": "medium",
-    "is_calibrated": false,
-    "variant_of": "metro_pro_calibrated"
+    "variant_of": "metro_pro"
   },
   {
     "id": "sleep_variant_4",
     "label": "SLEEP Variant #4",
-    "context": "Variant of Bedtime Bed Scroller (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Bedtime Bed Scroller (Calibrated) with minor adjustments.",
     "category": "language",
-    "attention_span": "long",
     "language": "Hindi",
+    "attention_span": "long",
     "trope_appetite": "high",
-    "is_calibrated": false,
-    "variant_of": "sleep_calibrated"
+    "variant_of": "sleep"
   },
   {
     "id": "diaspora_variant_5",
     "label": "DIASPORA Variant #5",
-    "context": "Variant of London Diaspora Listener (Calibrated) with minor adjustments.",
+    "prompt": "Variant of London Diaspora Listener (Calibrated) with minor adjustments.",
     "category": "genre",
-    "attention_span": "short",
     "language": "Hindi",
+    "attention_span": "short",
     "trope_appetite": "low",
-    "is_calibrated": false,
-    "variant_of": "diaspora_calibrated"
+    "variant_of": "diaspora"
   },
   {
     "id": "commuter_variant_6",
     "label": "COMMUTER Variant #6",
-    "context": "Variant of Arthouse Cinephile (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Arthouse Cinephile (Calibrated) with minor adjustments.",
     "category": "attention",
-    "attention_span": "medium",
     "language": "Hindi",
+    "attention_span": "medium",
     "trope_appetite": "medium",
-    "is_calibrated": false,
     "variant_of": "cinephile_calibrated"
   },
   {
     "id": "kitchen_variant_7",
     "label": "KITCHEN Variant #7",
-    "context": "Variant of Indie Critic (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Indie Critic (Calibrated) with minor adjustments.",
     "category": "context",
-    "attention_span": "long",
     "language": "Hindi",
+    "attention_span": "long",
     "trope_appetite": "high",
-    "is_calibrated": false,
     "variant_of": "critic_calibrated"
   },
   {
     "id": "night_rider_variant_8",
     "label": "NIGHT RIDER Variant #8",
-    "context": "Variant of Delhi Metro Commuter (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Delhi Metro Commuter (Calibrated) with minor adjustments.",
     "category": "language",
-    "attention_span": "short",
     "language": "Hindi",
+    "attention_span": "short",
     "trope_appetite": "low",
-    "is_calibrated": false,
-    "variant_of": "commuter_calibrated"
+    "variant_of": "commuter"
   },
   {
     "id": "metro_pro_variant_9",
     "label": "METRO PRO Variant #9",
-    "context": "Variant of Kitchen Multitasker (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Kitchen Multitasker (Calibrated) with minor adjustments.",
     "category": "genre",
-    "attention_span": "medium",
     "language": "Hindi",
+    "attention_span": "medium",
     "trope_appetite": "medium",
-    "is_calibrated": false,
-    "variant_of": "kitchen_calibrated"
+    "variant_of": "kitchen"
   },
   {
     "id": "sleep_variant_10",
     "label": "SLEEP Variant #10",
-    "context": "Variant of Night Auto Rider (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Night Auto Rider (Calibrated) with minor adjustments.",
     "category": "attention",
-    "attention_span": "long",
     "language": "Hindi",
+    "attention_span": "long",
     "trope_appetite": "high",
-    "is_calibrated": false,
-    "variant_of": "night_rider_calibrated"
+    "variant_of": "night_rider"
   },
   {
     "id": "diaspora_variant_11",
     "label": "DIASPORA Variant #11",
-    "context": "Variant of Gurgaon Professional (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Gurgaon Professional (Calibrated) with minor adjustments.",
     "category": "context",
-    "attention_span": "short",
     "language": "Hindi",
+    "attention_span": "short",
     "trope_appetite": "low",
-    "is_calibrated": false,
-    "variant_of": "metro_pro_calibrated"
+    "variant_of": "metro_pro"
   },
   {
     "id": "commuter_variant_12",
     "label": "COMMUTER Variant #12",
-    "context": "Variant of Bedtime Bed Scroller (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Bedtime Bed Scroller (Calibrated) with minor adjustments.",
     "category": "language",
-    "attention_span": "medium",
     "language": "Hindi",
+    "attention_span": "medium",
     "trope_appetite": "medium",
-    "is_calibrated": false,
-    "variant_of": "sleep_calibrated"
+    "variant_of": "sleep"
   },
   {
     "id": "kitchen_variant_13",
     "label": "KITCHEN Variant #13",
-    "context": "Variant of London Diaspora Listener (Calibrated) with minor adjustments.",
+    "prompt": "Variant of London Diaspora Listener (Calibrated) with minor adjustments.",
     "category": "genre",
-    "attention_span": "long",
     "language": "Hindi",
+    "attention_span": "long",
     "trope_appetite": "high",
-    "is_calibrated": false,
-    "variant_of": "diaspora_calibrated"
+    "variant_of": "diaspora"
   },
   {
     "id": "night_rider_variant_14",
     "label": "NIGHT RIDER Variant #14",
-    "context": "Variant of Arthouse Cinephile (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Arthouse Cinephile (Calibrated) with minor adjustments.",
     "category": "attention",
-    "attention_span": "short",
     "language": "Hindi",
+    "attention_span": "short",
     "trope_appetite": "low",
-    "is_calibrated": false,
     "variant_of": "cinephile_calibrated"
   },
   {
     "id": "metro_pro_variant_15",
     "label": "METRO PRO Variant #15",
-    "context": "Variant of Indie Critic (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Indie Critic (Calibrated) with minor adjustments.",
     "category": "context",
-    "attention_span": "medium",
     "language": "Hindi",
+    "attention_span": "medium",
     "trope_appetite": "medium",
-    "is_calibrated": false,
     "variant_of": "critic_calibrated"
   },
   {
     "id": "sleep_variant_16",
     "label": "SLEEP Variant #16",
-    "context": "Variant of Delhi Metro Commuter (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Delhi Metro Commuter (Calibrated) with minor adjustments.",
     "category": "language",
-    "attention_span": "long",
     "language": "Hindi",
+    "attention_span": "long",
     "trope_appetite": "high",
-    "is_calibrated": false,
-    "variant_of": "commuter_calibrated"
+    "variant_of": "commuter"
   },
   {
     "id": "diaspora_variant_17",
     "label": "DIASPORA Variant #17",
-    "context": "Variant of Kitchen Multitasker (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Kitchen Multitasker (Calibrated) with minor adjustments.",
     "category": "genre",
-    "attention_span": "short",
     "language": "Hindi",
+    "attention_span": "short",
     "trope_appetite": "low",
-    "is_calibrated": false,
-    "variant_of": "kitchen_calibrated"
+    "variant_of": "kitchen"
   },
   {
     "id": "commuter_variant_18",
     "label": "COMMUTER Variant #18",
-    "context": "Variant of Night Auto Rider (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Night Auto Rider (Calibrated) with minor adjustments.",
     "category": "attention",
-    "attention_span": "medium",
     "language": "Hindi",
+    "attention_span": "medium",
     "trope_appetite": "medium",
-    "is_calibrated": false,
-    "variant_of": "night_rider_calibrated"
+    "variant_of": "night_rider"
   },
   {
     "id": "kitchen_variant_19",
     "label": "KITCHEN Variant #19",
-    "context": "Variant of Gurgaon Professional (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Gurgaon Professional (Calibrated) with minor adjustments.",
     "category": "context",
-    "attention_span": "long",
     "language": "Hindi",
+    "attention_span": "long",
     "trope_appetite": "high",
-    "is_calibrated": false,
-    "variant_of": "metro_pro_calibrated"
+    "variant_of": "metro_pro"
   },
   {
     "id": "night_rider_variant_20",
     "label": "NIGHT RIDER Variant #20",
-    "context": "Variant of Bedtime Bed Scroller (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Bedtime Bed Scroller (Calibrated) with minor adjustments.",
     "category": "language",
-    "attention_span": "short",
     "language": "Hindi",
+    "attention_span": "short",
     "trope_appetite": "low",
-    "is_calibrated": false,
-    "variant_of": "sleep_calibrated"
+    "variant_of": "sleep"
   },
   {
     "id": "metro_pro_variant_21",
     "label": "METRO PRO Variant #21",
-    "context": "Variant of London Diaspora Listener (Calibrated) with minor adjustments.",
+    "prompt": "Variant of London Diaspora Listener (Calibrated) with minor adjustments.",
     "category": "genre",
-    "attention_span": "medium",
     "language": "Hindi",
+    "attention_span": "medium",
     "trope_appetite": "medium",
-    "is_calibrated": false,
-    "variant_of": "diaspora_calibrated"
+    "variant_of": "diaspora"
   },
   {
     "id": "sleep_variant_22",
     "label": "SLEEP Variant #22",
-    "context": "Variant of Arthouse Cinephile (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Arthouse Cinephile (Calibrated) with minor adjustments.",
     "category": "attention",
-    "attention_span": "long",
     "language": "Hindi",
+    "attention_span": "long",
     "trope_appetite": "high",
-    "is_calibrated": false,
     "variant_of": "cinephile_calibrated"
   },
   {
     "id": "diaspora_variant_23",
     "label": "DIASPORA Variant #23",
-    "context": "Variant of Indie Critic (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Indie Critic (Calibrated) with minor adjustments.",
     "category": "context",
-    "attention_span": "short",
     "language": "Hindi",
+    "attention_span": "short",
     "trope_appetite": "low",
-    "is_calibrated": false,
     "variant_of": "critic_calibrated"
   },
   {
     "id": "commuter_variant_24",
     "label": "COMMUTER Variant #24",
-    "context": "Variant of Delhi Metro Commuter (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Delhi Metro Commuter (Calibrated) with minor adjustments.",
     "category": "language",
-    "attention_span": "medium",
     "language": "Hindi",
+    "attention_span": "medium",
     "trope_appetite": "medium",
-    "is_calibrated": false,
-    "variant_of": "commuter_calibrated"
+    "variant_of": "commuter"
   },
   {
     "id": "kitchen_variant_25",
     "label": "KITCHEN Variant #25",
-    "context": "Variant of Kitchen Multitasker (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Kitchen Multitasker (Calibrated) with minor adjustments.",
     "category": "genre",
-    "attention_span": "long",
     "language": "Hindi",
+    "attention_span": "long",
     "trope_appetite": "high",
-    "is_calibrated": false,
-    "variant_of": "kitchen_calibrated"
+    "variant_of": "kitchen"
   },
   {
     "id": "night_rider_variant_26",
     "label": "NIGHT RIDER Variant #26",
-    "context": "Variant of Night Auto Rider (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Night Auto Rider (Calibrated) with minor adjustments.",
     "category": "attention",
-    "attention_span": "short",
     "language": "Hindi",
+    "attention_span": "short",
     "trope_appetite": "low",
-    "is_calibrated": false,
-    "variant_of": "night_rider_calibrated"
+    "variant_of": "night_rider"
   },
   {
     "id": "metro_pro_variant_27",
     "label": "METRO PRO Variant #27",
-    "context": "Variant of Gurgaon Professional (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Gurgaon Professional (Calibrated) with minor adjustments.",
     "category": "context",
-    "attention_span": "medium",
     "language": "Hindi",
+    "attention_span": "medium",
     "trope_appetite": "medium",
-    "is_calibrated": false,
-    "variant_of": "metro_pro_calibrated"
+    "variant_of": "metro_pro"
   },
   {
     "id": "sleep_variant_28",
     "label": "SLEEP Variant #28",
-    "context": "Variant of Bedtime Bed Scroller (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Bedtime Bed Scroller (Calibrated) with minor adjustments.",
     "category": "language",
-    "attention_span": "long",
     "language": "Hindi",
+    "attention_span": "long",
     "trope_appetite": "high",
-    "is_calibrated": false,
-    "variant_of": "sleep_calibrated"
+    "variant_of": "sleep"
   },
   {
     "id": "diaspora_variant_29",
     "label": "DIASPORA Variant #29",
-    "context": "Variant of London Diaspora Listener (Calibrated) with minor adjustments.",
+    "prompt": "Variant of London Diaspora Listener (Calibrated) with minor adjustments.",
     "category": "genre",
-    "attention_span": "short",
     "language": "Hindi",
+    "attention_span": "short",
     "trope_appetite": "low",
-    "is_calibrated": false,
-    "variant_of": "diaspora_calibrated"
+    "variant_of": "diaspora"
   },
   {
     "id": "commuter_variant_30",
     "label": "COMMUTER Variant #30",
-    "context": "Variant of Arthouse Cinephile (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Arthouse Cinephile (Calibrated) with minor adjustments.",
     "category": "attention",
-    "attention_span": "medium",
     "language": "Hindi",
+    "attention_span": "medium",
     "trope_appetite": "medium",
-    "is_calibrated": false,
     "variant_of": "cinephile_calibrated"
   },
   {
     "id": "kitchen_variant_31",
     "label": "KITCHEN Variant #31",
-    "context": "Variant of Indie Critic (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Indie Critic (Calibrated) with minor adjustments.",
     "category": "context",
-    "attention_span": "long",
     "language": "Hindi",
+    "attention_span": "long",
     "trope_appetite": "high",
-    "is_calibrated": false,
     "variant_of": "critic_calibrated"
   },
   {
     "id": "night_rider_variant_32",
     "label": "NIGHT RIDER Variant #32",
-    "context": "Variant of Delhi Metro Commuter (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Delhi Metro Commuter (Calibrated) with minor adjustments.",
     "category": "language",
-    "attention_span": "short",
     "language": "Hindi",
+    "attention_span": "short",
     "trope_appetite": "low",
-    "is_calibrated": false,
-    "variant_of": "commuter_calibrated"
+    "variant_of": "commuter"
   },
   {
     "id": "metro_pro_variant_33",
     "label": "METRO PRO Variant #33",
-    "context": "Variant of Kitchen Multitasker (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Kitchen Multitasker (Calibrated) with minor adjustments.",
     "category": "genre",
-    "attention_span": "medium",
     "language": "Hindi",
+    "attention_span": "medium",
     "trope_appetite": "medium",
-    "is_calibrated": false,
-    "variant_of": "kitchen_calibrated"
+    "variant_of": "kitchen"
   },
   {
     "id": "sleep_variant_34",
     "label": "SLEEP Variant #34",
-    "context": "Variant of Night Auto Rider (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Night Auto Rider (Calibrated) with minor adjustments.",
     "category": "attention",
-    "attention_span": "long",
     "language": "Hindi",
+    "attention_span": "long",
     "trope_appetite": "high",
-    "is_calibrated": false,
-    "variant_of": "night_rider_calibrated"
+    "variant_of": "night_rider"
   },
   {
     "id": "diaspora_variant_35",
     "label": "DIASPORA Variant #35",
-    "context": "Variant of Gurgaon Professional (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Gurgaon Professional (Calibrated) with minor adjustments.",
     "category": "context",
-    "attention_span": "short",
     "language": "Hindi",
+    "attention_span": "short",
     "trope_appetite": "low",
-    "is_calibrated": false,
-    "variant_of": "metro_pro_calibrated"
+    "variant_of": "metro_pro"
   },
   {
     "id": "commuter_variant_36",
     "label": "COMMUTER Variant #36",
-    "context": "Variant of Bedtime Bed Scroller (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Bedtime Bed Scroller (Calibrated) with minor adjustments.",
     "category": "language",
-    "attention_span": "medium",
     "language": "Hindi",
+    "attention_span": "medium",
     "trope_appetite": "medium",
-    "is_calibrated": false,
-    "variant_of": "sleep_calibrated"
+    "variant_of": "sleep"
   },
   {
     "id": "kitchen_variant_37",
     "label": "KITCHEN Variant #37",
-    "context": "Variant of London Diaspora Listener (Calibrated) with minor adjustments.",
+    "prompt": "Variant of London Diaspora Listener (Calibrated) with minor adjustments.",
     "category": "genre",
-    "attention_span": "long",
     "language": "Hindi",
+    "attention_span": "long",
     "trope_appetite": "high",
-    "is_calibrated": false,
-    "variant_of": "diaspora_calibrated"
+    "variant_of": "diaspora"
   },
   {
     "id": "night_rider_variant_38",
     "label": "NIGHT RIDER Variant #38",
-    "context": "Variant of Arthouse Cinephile (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Arthouse Cinephile (Calibrated) with minor adjustments.",
     "category": "attention",
-    "attention_span": "short",
     "language": "Hindi",
+    "attention_span": "short",
     "trope_appetite": "low",
-    "is_calibrated": false,
     "variant_of": "cinephile_calibrated"
   },
   {
     "id": "metro_pro_variant_39",
     "label": "METRO PRO Variant #39",
-    "context": "Variant of Indie Critic (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Indie Critic (Calibrated) with minor adjustments.",
     "category": "context",
-    "attention_span": "medium",
     "language": "Hindi",
+    "attention_span": "medium",
     "trope_appetite": "medium",
-    "is_calibrated": false,
     "variant_of": "critic_calibrated"
   },
   {
     "id": "sleep_variant_40",
     "label": "SLEEP Variant #40",
-    "context": "Variant of Delhi Metro Commuter (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Delhi Metro Commuter (Calibrated) with minor adjustments.",
     "category": "language",
-    "attention_span": "long",
     "language": "Hindi",
+    "attention_span": "long",
     "trope_appetite": "high",
-    "is_calibrated": false,
-    "variant_of": "commuter_calibrated"
+    "variant_of": "commuter"
   },
   {
     "id": "diaspora_variant_41",
     "label": "DIASPORA Variant #41",
-    "context": "Variant of Kitchen Multitasker (Calibrated) with minor adjustments.",
+    "prompt": "Variant of Kitchen Multitasker (Calibrated) with minor adjustments.",
     "category": "genre",
-    "attention_span": "short",
     "language": "Hindi",
+    "attention_span": "short",
     "trope_appetite": "low",
-    "is_calibrated": false,
-    "variant_of": "kitchen_calibrated"
+    "variant_of": "kitchen"
   }
 ]

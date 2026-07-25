@@ -194,22 +194,22 @@ class BeatDraftList(BaseModel):
 
 
 class Persona(BaseModel):
-    """A listener cohort. Track C ships calibrated versions of these at hour
-    13; we run on committed placeholders until then, with no code change."""
+    """A reusable listener identity and scorer brief."""
 
     id: str
     label: str
-    context: str
-    start_patience: float
-    #: reason_code -> multiplier. How hard this cohort takes each drain cause.
-    sensitivity: dict[str, float] = Field(default_factory=dict)
-    #: reason_code -> multiplier. How much each refill cause helps them.
-    replenish: dict[str, float] = Field(default_factory=dict)
-    seat_count: int = 5
-    #: Number of real abandonment statements behind this persona. 0 until
-    #: Track C mines the corpus. Surfaced in the UI — it is the grounding
-    #: claim made visible.
+    persona_type: str | None = None
+    prompt: str
     calibrated_from: int = 0
+
+
+class Calibration(BaseModel):
+    """The simulation tuning for one spawned listener."""
+
+    variant_index: int = Field(ge=0, le=4)
+    start_patience: float
+    sensitivity: dict[str, float]
+    replenish: dict[str, float]
 
 
 class AttentionDelta(BaseModel):
@@ -235,6 +235,8 @@ class AudienceMember(BaseModel):
 
     seat: int = Field(ge=0, le=29)
     cohort: str
+    persona_id: str
+    variant_index: int
     name: str
     start_patience: float
     #: None means they stayed to the end. Not 0, not -1.

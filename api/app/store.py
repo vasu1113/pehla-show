@@ -2,16 +2,23 @@ from __future__ import annotations
 
 import json
 from threading import RLock
+from types import ModuleType
 from typing import Any
 
 from app import config
-from app.models import Progress, Run
+from app.models import Persona, Progress, Run
 
 
 _runs: dict[str, Run] = {}
 _progress: dict[str, Progress] = {}
 _pinned: dict[tuple[str, str], str] = {}
 _lock = RLock()
+
+
+def _backend() -> ModuleType:
+    from app import store_supabase
+
+    return store_supabase
 
 
 def _read_json(name: str, default: Any) -> Any:
@@ -30,6 +37,50 @@ def _write_json(name: str, value: Any) -> None:
     temporary = path.with_suffix(".tmp")
     temporary.write_text(json.dumps(value, indent=2), encoding="utf-8")
     temporary.replace(path)
+
+
+def _list_file_personas() -> list[Persona]:
+    raw = json.loads(
+        (config.DATA_DIR / "personas.json").read_text(encoding="utf-8")
+    )
+    return [
+        Persona.model_validate(
+            {
+                "id": item["id"],
+                "label": item["label"],
+                "persona_type": item.get("persona_type"),
+                "prompt": item.get("prompt", item.get("context")),
+                "calibrated_from": item.get("calibrated_from", 0),
+            }
+        )
+        for item in raw["cohorts"]
+    ]
+
+
+def _select_personas(
+    personas: list[Persona],
+    ids: list[str],
+) -> list[Persona]:
+    by_id = {persona.id: persona for persona in personas}
+    selected: list[Persona] = []
+    for persona_id in ids:
+        persona = by_id.get(persona_id)
+        if persona is None:
+            raise KeyError(f"Unknown persona id: {persona_id}")
+        selected.append(persona)
+    return selected
+
+
+def list_personas() -> list[Persona]:
+    if config.STORE_BACKEND == "supabase":
+        return _backend().list_personas()
+    return _list_file_personas()
+
+
+def get_personas(ids: list[str]) -> list[Persona]:
+    if config.STORE_BACKEND == "supabase":
+        return _backend().get_personas(ids)
+    return _select_personas(_list_file_personas(), ids)
 
 
 def _load() -> None:
@@ -96,30 +147,42 @@ def _persist_pins() -> None:
 
 
 def save(run: Run) -> None:
+    if config.STORE_BACKEND == "supabase":
+        _backend().save(run)
+        return
     with _lock:
         _runs[run.run_id] = run.model_copy(deep=True)
         _persist_runs()
 
 
 def get(run_id: str) -> Run | None:
+    if config.STORE_BACKEND == "supabase":
+        return _backend().get(run_id)
     with _lock:
         run = _runs.get(run_id)
         return run.model_copy(deep=True) if run is not None else None
 
 
 def set_progress(run_id: str, progress: Progress) -> None:
+    if config.STORE_BACKEND == "supabase":
+        _backend().set_progress(run_id, progress)
+        return
     with _lock:
         _progress[run_id] = progress.model_copy(deep=True)
         _persist_progress()
 
 
 def get_progress(run_id: str) -> Progress | None:
+    if config.STORE_BACKEND == "supabase":
+        return _backend().get_progress(run_id)
     with _lock:
         progress = _progress.get(run_id)
         return progress.model_copy(deep=True) if progress is not None else None
 
 
 def find_pinned(content_hash: str, variant: str = "original") -> Run | None:
+    if config.STORE_BACKEND == "supabase":
+        return _backend().find_pinned(content_hash, variant)
     with _lock:
         run_id = _pinned.get((content_hash, variant))
         run = _runs.get(run_id) if run_id is not None else None
@@ -127,6 +190,9 @@ def find_pinned(content_hash: str, variant: str = "original") -> Run | None:
 
 
 def pin(run_id: str, content_hash: str) -> None:
+    if config.STORE_BACKEND == "supabase":
+        _backend().pin(run_id, content_hash)
+        return
     with _lock:
         run = _runs.get(run_id)
         if run is None:
@@ -136,8 +202,28 @@ def pin(run_id: str, content_hash: str) -> None:
 
 
 def list_pinned() -> list[str]:
+    """Only pins that actually resolve to a stored run.
+
+    A pin whose run has gone is worse than no pin: /analyse falls through and
+    re-runs the pipeline, while /health cheerfully reports the demo is
+    insured. The header dot has to be able to be wrong out loud.
+    """
+    if config.STORE_BACKEND == "supabase":
+        return _backend().list_pinned()
     with _lock:
-        return sorted(set(_pinned.values()))
+        return sorted({
+            run_id for run_id in _pinned.values() if run_id in _runs
+        })
+
+
+def dangling_pins() -> list[str]:
+    """Pins pointing at runs that no longer exist. Should always be empty."""
+    if config.STORE_BACKEND == "supabase":
+        return _backend().dangling_pins()
+    with _lock:
+        return sorted({
+            run_id for run_id in _pinned.values() if run_id not in _runs
+        })
 
 
 _load()
@@ -149,6 +235,8 @@ def is_writable() -> bool:
     Feeds /health, which Track B renders as a dot in the header. A constant
     would make that dot meaningless.
     """
+    if config.STORE_BACKEND == "supabase":
+        return _backend().is_writable()
     try:
         config.RUNS_DIR.mkdir(parents=True, exist_ok=True)
         probe = config.RUNS_DIR / ".probe"

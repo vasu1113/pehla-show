@@ -19,6 +19,11 @@ REPO_ROOT = API_DIR.parent
 DATA_DIR = REPO_ROOT / "data"
 RUNS_DIR = API_DIR / ".runs"
 
+# ─── storage backend ──────────────────────────────────────────────────────
+STORE_BACKEND = os.getenv("STORE_BACKEND", "file")  # file | supabase
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+
 # ─── determinism ──────────────────────────────────────────────────────────
 # A deterministic sim means the demo produces the same room every time you
 # rehearse it. Never make this configurable per-request.

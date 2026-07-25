@@ -112,3 +112,7 @@
 .fd-start:hover { opacity: 0.88; }
 .fd-start:disabled { background: transparent; border-color: var(--bone-faint); color: var(--bone-faint); cursor: not-allowed; }
 .fd-foot-hint { font-size: 11px; letter-spacing: 0.1em; color: var(--bone-dim); }
+
+/* a persona the backend hasn't seeded yet — visible but not castable */
+.fd-lib-card.is-locked { opacity: 0.32; cursor: not-allowed; }
+.fd-lib-source { font-size: 9px; letter-spacing: 0.08em; color: var(--bone-faint); padding-top: 4px; }

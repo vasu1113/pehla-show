@@ -9,8 +9,9 @@ from __future__ import annotations
 import pytest
 
 import asyncio
+from pathlib import Path
 
-from app import config, pipeline
+from app import config, pipeline, store
 from app.models import (
     AgentId,
     Beat,
@@ -22,6 +23,28 @@ from app.models import (
 )
 from app.stages.a6_experts import _populate_relationships, _relation
 from app.stages.a8_fix import classify_change
+
+
+@pytest.fixture(autouse=True)
+def isolated_runs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Never write to the real run store.
+
+    This file drives the actual pipeline, and without this it persisted test
+    runs into api/.runs — which wiped the pinned demo runs while leaving
+    pinned.json pointing at them. At hour 20 that is the demo silently losing
+    its insurance.
+    """
+    monkeypatch.setattr(config, "RUNS_DIR", tmp_path)
+    monkeypatch.setattr(config, "LLM_BACKEND", "fake")
+    saved_runs = dict(store._runs)
+    saved_pins = dict(store._pinned)
+    store._runs.clear()
+    store._pinned.clear()
+    yield
+    store._runs.clear()
+    store._runs.update(saved_runs)
+    store._pinned.clear()
+    store._pinned.update(saved_pins)
 
 
 def _note(agent: AgentId, note_type: NoteType, beat_id: int = 1) -> Note:
@@ -117,10 +140,10 @@ def test_walkouts_contradict_a_note_defending_the_material() -> None:
     assert "audience" in by_agent[AgentId.editor].agrees_with
 
 
-# ── cohort selection ──────────────────────────────────────────────────────
+# ── persona selection ─────────────────────────────────────────────────────
 
 
-def test_empty_cohort_ids_screens_to_everyone_not_to_nobody() -> None:
+def test_empty_persona_ids_screens_to_everyone_not_to_nobody() -> None:
     """An empty list is not a request for an empty hall."""
     assert len(pipeline._load_personas([])) == 6
     assert len(pipeline._load_personas(None)) == 6
@@ -128,12 +151,12 @@ def test_empty_cohort_ids_screens_to_everyone_not_to_nobody() -> None:
 
 def test_selecting_a_subset_works() -> None:
     picked = pipeline._load_personas(["commuter", "sleep"])
-    assert {p.id for p in picked} == {"commuter", "sleep"}
+    assert [p.id for p in picked] == ["commuter", "sleep"]
 
 
-def test_entirely_unknown_cohorts_are_an_error_not_an_empty_hall() -> None:
-    with pytest.raises(ValueError):
-        pipeline._load_personas(["not_a_cohort"])
+def test_unknown_personas_are_an_error_not_an_empty_hall() -> None:
+    with pytest.raises(KeyError, match="not_a_persona"):
+        pipeline._load_personas(["not_a_persona"])
 
 
 # ── the fix validator ─────────────────────────────────────────────────────
@@ -210,8 +233,7 @@ def test_a_short_leak_between_sample_points_is_still_caught() -> None:
     persona = Persona(
         id="commuter",
         label="Tier-2 commuter",
-        context="noisy",
-        start_patience=6.0,
+        prompt="noisy",
     )
 
     # Exactly one window's worth of beat 2, offset by a single character.

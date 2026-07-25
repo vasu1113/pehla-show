@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
-import personas from '../../data/personas.json';
 import presets from '../../data/presets.json';
 import { Figure } from '../../audience/Figure';
+import { usePersonaLibrary } from '../../data/usePersonaLibrary';
 import './FrontDoor.css';
 
 const categoryLabel = {
@@ -14,7 +14,6 @@ const categoryLabel = {
 
 const titleCase = (s) => s.replaceAll('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 const presetLabel = (id) => (id === 'custom' ? 'Custom room' : titleCase(id));
-const personaById = new Map(personas.map((p) => [p.id, p]));
 
 // give each persona a stable little look, so the library reads as different people
 const hairFor = (id) => {
@@ -24,6 +23,9 @@ const hairFor = (id) => {
 };
 
 export function FrontDoor({ onStart }) {
+  // Personas come from the live library (union of the bundled shelf + whatever
+  // the backend has seeded). Only `seeded` personas can actually be cast.
+  const { personas, source } = usePersonaLibrary();
   // The room starts empty — you cast it yourself (drag/click). No auto-selection.
   const [selected, setSelected] = useState([]);
   const [activePreset, setActivePreset] = useState(null);
@@ -31,27 +33,35 @@ export function FrontDoor({ onStart }) {
   const [query, setQuery] = useState('');
   const [script, setScript] = useState('');
 
-  const categories = useMemo(() => ['all', ...new Set(personas.map((p) => p.category))], []);
+  const byId = useMemo(() => new Map(personas.map((p) => [p.id, p])), [personas]);
+  const seatable = (id) => byId.get(id)?.seeded === true;
+
+  const categories = useMemo(
+    () => ['all', ...new Set(personas.map((p) => p.category))],
+    [personas],
+  );
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return personas.filter(
       (p) =>
         (category === 'all' || p.category === category) &&
-        (!needle || `${p.label} ${p.context} ${p.language}`.toLowerCase().includes(needle)),
+        (!needle || `${p.label} ${p.prompt ?? ''} ${p.language ?? ''}`.toLowerCase().includes(needle)),
     );
-  }, [category, query]);
+  }, [personas, category, query]);
 
   const add = (id) =>
-    setSelected((cur) => (cur.includes(id) || cur.length >= 6 ? cur : [...cur, id]));
+    setSelected((cur) => (!seatable(id) || cur.includes(id) || cur.length >= 6 ? cur : [...cur, id]));
   const remove = (id) => setSelected((cur) => cur.filter((x) => x !== id));
+  const markCustom = () => setActivePreset('custom');
   const choosePreset = (preset) => {
     setActivePreset(preset.id);
-    setSelected(preset.personas.slice(0, 6));
+    // Only seat personas the library actually has; a preset can name one the
+    // backend hasn't seeded yet.
+    setSelected(preset.personas.filter(seatable).slice(0, 6));
     if (preset.id === 'custom') setCategory('all');
   };
 
   // drag + click both work
-  const markCustom = () => setActivePreset('custom');
   const dragStart = (e, id, from) => e.dataTransfer.setData('text/plain', JSON.stringify({ id, from }));
   const allow = (e) => e.preventDefault();
   const payload = (e) => {
@@ -105,7 +115,7 @@ export function FrontDoor({ onStart }) {
           />
         </section>
 
-        {/* 2 · THE AUDIENCE — drag from the library into your room (or click) */}
+        {/* 2 · CAST THE ROOM — drag from the library into your room (or click) */}
         <section className="fd-step">
           <div className="fd-step-head">
             <div className="fd-step-label"><span className="fd-num">2</span> Cast the room</div>
@@ -152,29 +162,33 @@ export function FrontDoor({ onStart }) {
               <div className="fd-lib-list">
                 {filtered.map((p) => {
                   const on = selected.includes(p.id);
+                  const canSeat = p.seeded;
                   const full = !on && selected.length >= 6;
                   return (
                     <div
                       key={p.id}
-                      className={`fd-lib-card${on ? ' is-on' : ''}${full ? ' is-full' : ''}`}
-                      draggable={!on && !full}
-                      onDragStart={(e) => dragStart(e, p.id, 'lib')}
-                      onClick={() => (on ? remove(p.id) : full ? null : (markCustom(), add(p.id)))}
+                      className={`fd-lib-card${on ? ' is-on' : ''}${!canSeat ? ' is-locked' : full ? ' is-full' : ''}`}
+                      draggable={canSeat && !on && !full}
+                      onDragStart={(e) => canSeat && dragStart(e, p.id, 'lib')}
+                      onClick={() => (!canSeat ? null : on ? remove(p.id) : full ? null : (markCustom(), add(p.id)))}
                       role="button"
                       aria-pressed={on}
                     >
                       <span className="fd-mini"><Figure hair={hairFor(p.id)} /></span>
                       <span className="fd-lib-body">
                         <span className="fd-lib-name">{p.label}</span>
-                        <span className="fd-lib-meta">
-                          {p.is_calibrated ? `calibrated · ${p.calibrated_from} real walkouts` : 'variant'}
-                        </span>
+                        <span className="fd-lib-meta">{p.prompt ?? `${p.category} · ${p.language}`}</span>
                       </span>
-                      <span className="fd-lib-act">{on ? 'seated' : full ? 'room full' : 'drag / click'}</span>
+                      <span className="fd-lib-act">
+                        {!canSeat ? 'coming soon' : on ? 'seated' : full ? 'room full' : 'drag / click'}
+                      </span>
                     </div>
                   );
                 })}
               </div>
+              {source === 'bundled' && (
+                <div className="fd-lib-source">Showing the bundled library — the live backend isn't answering.</div>
+              )}
             </div>
 
             {/* RIGHT — your room */}
@@ -182,7 +196,7 @@ export function FrontDoor({ onStart }) {
               <div className="fd-room-label">Your room</div>
               <div className="fd-seats" onDragOver={allow} onDrop={dropInRoom}>
                 {slots.map((id, i) => {
-                  const p = id ? personaById.get(id) : null;
+                  const p = id ? byId.get(id) : null;
                   return (
                     <div
                       key={i}
