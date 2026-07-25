@@ -203,10 +203,15 @@ def _populate_relationships(
         # reports that it left. A note that argues the material earns its
         # place is contradicted by people walking out on it.
         if note.beat_id in drop_beat_ids:
-            if _stance(note.note_type) == "defend":
+            stance = _stance(note.note_type)
+            if stance == "defend":
                 disagrees.add("audience")
-            else:
+            elif stance == "attack":
                 agrees.add("audience")
+            # Off-axis notes stay off-axis here too. The Director flagging
+            # unclear blocking on a beat people walked out of has not thereby
+            # endorsed the walkout — same reason he does not endorse the
+            # Editor's cut.
 
         populated.append(
             note.model_copy(

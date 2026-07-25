@@ -4,7 +4,7 @@
   "parent_run_id": null,
   "variant": "original",
   "status": "ready",
-  "created_at": "2026-07-25T09:31:53+00:00",
+  "created_at": "2026-07-25T10:24:26+00:00",
   "script": {
     "id": "d552d8a1d5b0",
     "title": "Adhoori Baat, Episode 1",
@@ -1764,9 +1764,7 @@
       "text": "Director note on chunk 12.",
       "evidence": "and so it had been for many years",
       "severity": 2,
-      "agrees_with": [
-        "audience"
-      ],
+      "agrees_with": [],
       "disagrees_with": []
     },
     {
@@ -1779,9 +1777,7 @@
       "text": "Director note on chunk 16.",
       "evidence": "and so it had been for many years",
       "severity": 2,
-      "agrees_with": [
-        "audience"
-      ],
+      "agrees_with": [],
       "disagrees_with": []
     },
     {
@@ -1907,9 +1903,7 @@
       "text": "Psychologist note on chunk 12.",
       "evidence": "and so it had been for many years",
       "severity": 4,
-      "agrees_with": [
-        "audience"
-      ],
+      "agrees_with": [],
       "disagrees_with": []
     },
     {
@@ -1922,9 +1916,7 @@
       "text": "Psychologist note on chunk 16.",
       "evidence": "and so it had been for many years",
       "severity": 5,
-      "agrees_with": [
-        "audience"
-      ],
+      "agrees_with": [],
       "disagrees_with": []
     },
     {
