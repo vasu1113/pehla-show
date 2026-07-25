@@ -81,7 +81,7 @@ def build_scorer_input(beats: list[Beat], upto: int, persona: Persona) -> str:
 
     lines: list[str] = []
     lines.append("THIS PERSON")
-    lines.append(f"{persona.label}. {persona.context}")
+    lines.append(f"{persona.label}. {persona.prompt}")
     lines.append("")
 
     if upto > 0:

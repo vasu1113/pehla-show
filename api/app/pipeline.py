@@ -9,6 +9,7 @@ from app.blindfold import BlindfoldViolation
 from app.llm import LLM, get_llm
 from app.prompts.expert import LENSES as EXPERT_LENSES
 from app.stages import (
+    a0_cast,
     a1_parse,
     a2_score,
     a3_simulate,
@@ -51,7 +52,16 @@ def _progress(
 
 def _load_personas(cohort_ids: list[str] | None = None) -> list[models.Persona]:
     raw = json.loads((config.DATA_DIR / "personas.json").read_text(encoding="utf-8"))
-    personas = [models.Persona.model_validate(item) for item in raw["cohorts"]]
+    personas: list[models.Persona] = []
+    for item in raw["cohorts"]:
+        persona_data = {
+            "id": item["id"],
+            "label": item["label"],
+            "persona_type": item.get("persona_type"),
+            "prompt": item.get("prompt", item.get("context")),
+            "calibrated_from": item.get("calibrated_from", 0),
+        }
+        personas.append(models.Persona.model_validate(persona_data))
     # An explicit empty list is not a request for an empty hall — the contract
     # says cohort_ids is optional and defaults to all six, so treat "none
     # specified" the same either way rather than silently screening to nobody.
@@ -131,8 +141,8 @@ def _summary(
             models.Cohort(
                 id=persona.id,
                 label=persona.label,
-                context=persona.context,
-                seat_count=persona.seat_count,
+                context=persona.prompt,
+                seat_count=a0_cast.SEATS_PER_PERSONA,
                 retained_pct=retained,
             )
         )
@@ -168,6 +178,7 @@ async def _screen(
     list[models.DropEvent],
     list[models.Warning],
 ]:
+    cast = a0_cast.spawn_audience(personas)
     total_calls = len(personas)
     beats_total = len(beats) * total_calls
     _progress(
@@ -257,7 +268,9 @@ async def _screen(
             warnings,
         )
 
-    audience = a3_simulate.simulate_population(deltas, kept, beats)
+    kept_ids = {persona.id for persona in kept}
+    kept_cast = [member for member in cast if member[0].id in kept_ids]
+    audience = a3_simulate.simulate_population(deltas, kept_cast, beats)
     drops = a4_cliffs.detect_cliffs(audience, beats)
     return kept, audience, drops, warnings
 

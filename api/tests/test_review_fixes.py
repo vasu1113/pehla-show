@@ -233,8 +233,7 @@ def test_a_short_leak_between_sample_points_is_still_caught() -> None:
     persona = Persona(
         id="commuter",
         label="Tier-2 commuter",
-        context="noisy",
-        start_patience=6.0,
+        prompt="noisy",
     )
 
     # Exactly one window's worth of beat 2, offset by a single character.

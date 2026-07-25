@@ -22,8 +22,9 @@ from pathlib import Path
 API_DIR = Path(__file__).resolve().parent.parent / "api"
 sys.path.insert(0, str(API_DIR))
 
-from app import config, models  # noqa: E402
+from app import config, models, pipeline  # noqa: E402
 from app.llm import get_llm  # noqa: E402
+from app.stages.a0_cast import SEATS_PER_PERSONA, spawn_audience  # noqa: E402
 from app.stages.a1_parse import content_hash, parse_beats  # noqa: E402
 from app.stages.a2_score import score_persona_verbose  # noqa: E402
 from app.stages.a3_simulate import simulate_population  # noqa: E402
@@ -33,14 +34,10 @@ from app.stages.a7_synth import synthesise_room  # noqa: E402
 from app.prompts.expert import LENSES as EXPERT_LENSES  # noqa: E402
 
 
-def load_personas() -> list[models.Persona]:
-    raw = json.loads((config.DATA_DIR / "personas.json").read_text())
-    return [models.Persona(**c) for c in raw["cohorts"]]
-
-
 async def run(raw_text: str, title: str) -> models.Run:
     llm = get_llm()
-    personas = load_personas()
+    personas = pipeline._load_personas()
+    cast = spawn_audience(personas)
 
     beats = await parse_beats(raw_text, llm)
     print(f"A1  {len(beats)} beats, {beats[-1].end_sec}s")
@@ -82,7 +79,9 @@ async def run(raw_text: str, title: str) -> models.Run:
 
     print(f"A2  {len(kept)}/{len(personas)} cohorts scored")
 
-    audience = simulate_population(deltas, kept, beats)
+    kept_ids = {persona.id for persona in kept}
+    kept_cast = [member for member in cast if member[0].id in kept_ids]
+    audience = simulate_population(deltas, kept_cast, beats)
     drops = detect_cliffs(audience, beats)
 
     left = [m for m in audience if m.left_at_sec is not None]
@@ -120,8 +119,8 @@ async def run(raw_text: str, title: str) -> models.Run:
             models.Cohort(
                 id=p.id,
                 label=p.label,
-                context=p.context,
-                seat_count=p.seat_count,
+                context=p.prompt,
+                seat_count=SEATS_PER_PERSONA,
                 retained_pct=cohort_retention.get(p.id, 0.0),
             )
             for p in kept

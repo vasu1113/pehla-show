@@ -9,6 +9,7 @@ from app.models import (
     BeatType,
     Persona,
 )
+from app.stages.a0_cast import spawn_audience
 from app.stages.a3_simulate import simulate_population
 from app.stages.a4_cliffs import detect_cliffs
 
@@ -44,10 +45,7 @@ def _personas() -> list[Persona]:
         Persona(
             id=cohort,
             label=cohort.replace("_", " ").title(),
-            context="Synthetic listening context",
-            start_patience=2.0,
-            sensitivity={"PACING_FLAT": 1.0},
-            replenish={"TENSION_SPIKE": 1.0},
+            prompt="Synthetic listening context",
         )
         for cohort in _COHORTS
     ]
@@ -71,15 +69,23 @@ def _deltas() -> dict[str, list[AttentionDelta]]:
 
 
 def _simulated_audience() -> list[AudienceMember]:
-    return simulate_population(_deltas(), _personas(), _beats())
+    return simulate_population(
+        _deltas(),
+        spawn_audience(_personas()),
+        _beats(),
+    )
 
 
 def test_simulation_is_deterministic_even_when_personas_are_shuffled() -> None:
     beats, personas, deltas = _beats(), _personas(), _deltas()
 
-    first = simulate_population(deltas, personas, beats)
-    second = simulate_population(deltas, personas, beats)
-    shuffled = simulate_population(deltas, list(reversed(personas)), beats)
+    first = simulate_population(deltas, spawn_audience(personas), beats)
+    second = simulate_population(deltas, spawn_audience(personas), beats)
+    shuffled = simulate_population(
+        deltas,
+        spawn_audience(list(reversed(personas))),
+        beats,
+    )
 
     assert first == second
     assert first == shuffled
@@ -87,7 +93,11 @@ def test_simulation_is_deterministic_even_when_personas_are_shuffled() -> None:
 
 def test_every_member_has_one_trace_entry_per_beat_plus_start() -> None:
     beats = _beats()
-    audience = simulate_population(_deltas(), _personas(), beats)
+    audience = simulate_population(
+        _deltas(),
+        spawn_audience(_personas()),
+        beats,
+    )
 
     assert all(
         len(member.patience_trace) == len(beats) + 1
@@ -141,6 +151,8 @@ def _leaver(
     return AudienceMember(
         seat=seat,
         cohort=cohort,
+        persona_id=cohort,
+        variant_index=seat % 5,
         name=f"Synthetic listener {seat}",
         start_patience=2.0,
         left_at_sec=timestamp,

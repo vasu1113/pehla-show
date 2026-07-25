@@ -48,8 +48,7 @@ def _persona() -> Persona:
     return Persona(
         id="commuter",
         label="Tier-2 commuter",
-        context="40 min two-wheeler, noisy",
-        start_patience=6.0,
+        prompt="40 min two-wheeler, noisy",
     )
 
 
