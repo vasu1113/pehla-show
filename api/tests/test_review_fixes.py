@@ -15,6 +15,7 @@ from app.models import (
     BeatType,
     DropEvent,
     Note,
+    Persona,
     NoteType,
 )
 from app.stages.a6_experts import _populate_relationships, _relation
@@ -171,3 +172,53 @@ def test_a_single_cut_is_accepted() -> None:
 )
 def test_anything_larger_than_one_edit_is_rejected(after: list[int]) -> None:
     assert classify_change([0, 1, 2, 3, 4], after) == "invalid"
+
+
+# ── the blindfold guard's resolution ──────────────────────────────────────
+
+
+def test_a_short_leak_between_sample_points_is_still_caught() -> None:
+    """The guard used to sample every 10th offset of a 40-char window.
+
+    A leaked fragment only a little longer than the window could fall between
+    two sample points and pass. That is the one failure the product cannot
+    survive quietly, so the check is exhaustive now.
+    """
+    from app.blindfold import BlindfoldViolation, build_scorer_input
+
+    beats = [
+        Beat(
+            id=i,
+            index=i,
+            start_sec=i * 10,
+            end_sec=(i + 1) * 10,
+            text_span=span,
+            type=BeatType.exposition,
+            tension_delta=0,
+            stakes_level=2,
+        )
+        for i, span in enumerate(
+            [
+                "Meera sets the kettle down and does not look up at him.",
+                "The neighbour's radio starts up, the same programme as ever.",
+                "Posted eleven years ago to an address she has never lived at.",
+            ]
+        )
+    ]
+    persona = Persona(
+        id="commuter",
+        label="Tier-2 commuter",
+        context="noisy",
+        start_patience=6.0,
+    )
+
+    # Exactly one window's worth of beat 2, offset by a single character.
+    # Under the old step of 10 this matched no sample point at all and passed
+    # silently: the shingle at offset 0 starts before the fragment, and the
+    # one at offset 10 runs past its end. Verified as a real miss, not a
+    # hypothetical one.
+    leak = beats[2].text_span[1:41]
+    beats[0].text_span += " " + leak
+
+    with pytest.raises(BlindfoldViolation):
+        build_scorer_input(beats, 0, persona)

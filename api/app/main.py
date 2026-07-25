@@ -56,6 +56,7 @@ def _run_background(coroutine: Coroutine[Any, Any, Any]) -> Any:
 
 def _task_finished(task: Future[Any]) -> None:
     _tasks.discard(task)
+    run_id = _task_runs.pop(task, None)
     error = task.exception()
     if error is None:
         return
@@ -65,7 +66,6 @@ def _task_finished(task: Future[Any]) -> None:
     # that will never resolve — the one failure mode the contract has no
     # answer for. Log it, and mark the run so the poll terminates.
     log.error("background pipeline task failed", exc_info=error)
-    run_id = _task_runs.pop(task, None)
     if run_id is None:
         return
     run = store.get(run_id)

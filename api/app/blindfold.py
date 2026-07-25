@@ -41,12 +41,18 @@ def _normalise(text: str) -> str:
 
 
 def _shingles(text: str, window: int = _LEAK_WINDOW) -> set[str]:
-    """Overlapping character windows, so a leak survives reformatting."""
+    """Overlapping character windows, so a leak survives reformatting.
+
+    Step is 1, not a fraction of the window. A sampled step leaves a gap: a
+    leaked fragment only a little longer than the window can fall between two
+    sample points and go unseen. This is the one guard standing between us and
+    a product that silently doesn't work, so it does not get to be approximate
+    — and the texts are a few hundred characters, so exhaustive is cheap.
+    """
     flat = _normalise(text)
     if len(flat) < window:
         return {flat} if flat else set()
-    step = max(1, window // 4)
-    return {flat[i : i + window] for i in range(0, len(flat) - window + 1, step)}
+    return {flat[i : i + window] for i in range(len(flat) - window + 1)}
 
 
 def assert_no_leak(rendered: str, beats: list[Beat], upto: int) -> None:
