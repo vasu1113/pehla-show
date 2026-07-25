@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# Track A
+api/.venv/
+api/.runs/
+api/.env
+__pycache__/
