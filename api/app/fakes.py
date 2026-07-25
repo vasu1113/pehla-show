@@ -37,7 +37,7 @@ class FakeLLM:
         if schema is models.BeatDraftList:
             return schema.model_validate(self._beat_drafts(prompt, rng))
         if schema is models.ScoredBeat:
-            return schema.model_validate(self._scored_beat(rng))
+            return schema.model_validate(self._scored_beat(rng, prompt))
         return schema.model_validate(self._model_values(schema, rng))
 
     def _beat_drafts(self, prompt: str, rng: random.Random) -> dict[str, object]:
@@ -88,21 +88,49 @@ class FakeLLM:
         return {"beats": beats}
 
     @staticmethod
-    def _scored_beat(rng: random.Random) -> dict[str, object]:
-        is_drain = rng.randrange(3) != 0
+    def _scored_beat(rng: random.Random, prompt: str) -> dict[str, object]:
+        # Whether a beat drains is a property of the BEAT, not of who is
+        # listening — otherwise a genuinely bad beat is bad for a random
+        # subset of cohorts, every walkout is a taste split, and the
+        # structural/taste_split distinction A4 exists to draw never fires.
+        # So: the beat decides drain-vs-refill and the base magnitude; the
+        # persona only modulates it. That also matches how the real thing
+        # behaves — everyone hits a broken beat, they just hit it differently.
+        beat_rng = random.Random(
+            hashlib.sha256(
+                FakeLLM._current_chunk(prompt).encode("utf-8")
+            ).hexdigest()
+        )
+        is_drain = beat_rng.randrange(3) != 0
+        base = beat_rng.randint(1, 3)
+
+        # ±1 of persona wobble, so cohorts still disagree about how much.
+        magnitude = max(1, min(3, base + rng.choice((-1, 0, 0, 1))))
+
         if is_drain:
-            code = rng.choice(models.DRAIN_CODES)
-            delta = -rng.randint(1, 3)
-            evidence = "The beat delays the central question."
-        else:
-            code = rng.choice(models.REFILL_CODES)
-            delta = rng.randint(1, 3)
-            evidence = "A fresh reveal sharpens the central question."
+            return {
+                "delta": -magnitude,
+                "reason_code": beat_rng.choice(models.DRAIN_CODES),
+                "evidence": "The beat delays the central question.",
+            }
         return {
-            "delta": delta,
-            "reason_code": code,
-            "evidence": evidence,
+            "delta": magnitude,
+            "reason_code": beat_rng.choice(models.REFILL_CODES),
+            "evidence": "A fresh reveal sharpens the central question.",
         }
+
+    @staticmethod
+    def _current_chunk(prompt: str) -> str:
+        """The beat being scored, isolated from the persona and the history.
+
+        blindfold.build_scorer_input puts it under a fixed header; falling
+        back to the whole prompt keeps this safe if that copy ever changes.
+        """
+        marker = "THE CHUNK THEY ARE HEARING NOW"
+        _, sep, tail = prompt.partition(marker)
+        if not sep:
+            return prompt
+        return tail.split("─")[0].strip()
 
     @staticmethod
     def _extract_script(prompt: str) -> str | None:

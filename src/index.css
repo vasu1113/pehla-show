@@ -43,3 +43,85 @@ body {
   color: var(--bone-faint);
   margin-top: 14px;
 }
+
+.ghost {
+  background: none;
+  border: 1px solid var(--bone-faint);
+  color: var(--bone-faint);
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.ghost:hover {
+  color: var(--bone);
+  border-color: var(--bone-dim);
+}
+
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.scrub {
+  flex: 1;
+  appearance: none;
+  height: 2px;
+  background: var(--bone-faint);
+  cursor: pointer;
+}
+
+.scrub::-webkit-slider-thumb {
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--beam);
+}
+
+.readout {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--bone-dim);
+  min-width: 92px;
+  text-align: right;
+}
+
+.tooltip {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--bone-faint);
+  max-width: 460px;
+}
+
+.tooltip-name {
+  font-size: 13px;
+  color: var(--bone);
+}
+
+.tooltip-meta {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+  margin-top: 3px;
+}
+
+.tooltip-body {
+  font-size: 12px;
+  color: var(--bone-dim);
+  margin: 10px 0 0;
+}
+
+/* The exact phrase that lost them. This is the payload. */
+.tooltip-evidence {
+  font-size: 12px;
+  color: var(--beam);
+  font-style: italic;
+  margin: 8px 0 12px;
+}

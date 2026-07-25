@@ -43,8 +43,21 @@ LLM_MAX_RETRIES = int(os.getenv("LLM_MAX_RETRIES", "2"))
 WORDS_PER_MINUTE = 150          # A1 computes beat timings from this, in code
 SEATS_PER_COHORT = 5            # × 6 cohorts = 30 seats
 SEAT_COUNT = 30
-PATIENCE_JITTER = 0.15          # ±15% on starting patience, per seat
-SENSITIVITY_JITTER = 0.15       # ±15% on each per-cause sensitivity, per seat
+# Per seat, so a cohort does not leave as a block — five people in the same
+# situation still have different mornings.
+PATIENCE_JITTER = float(os.getenv("PATIENCE_JITTER", "0.28"))
+SENSITIVITY_JITTER = float(os.getenv("SENSITIVITY_JITTER", "0.15"))
+
+# The scorer reports -3..+3 per beat; patience starts around 4.5-8.5. Applied
+# raw, three bad beats empty the hall inside ninety seconds and the demo has no
+# shape. This converts a delta into a patience cost, so a listener takes a
+# handful of bad beats to lose rather than three.
+#
+# THE knob for how fast the room empties. Tune it before touching personas or
+# prompts. Sweep it with PATIENCE_SCALE=0.13 uv run python scripts/run_pipeline.py
+# and read the retention line. Calibrated against the fake; re-check it once
+# real scores land, because correlated drains bite harder than random ones.
+PATIENCE_SCALE = float(os.getenv("PATIENCE_SCALE", "0.15"))
 
 MIN_WORDS = 200                 # below this, /analyse returns 400
 MAX_WORDS = 8000                # above this, /analyse returns 413
