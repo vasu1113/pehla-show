@@ -1,0 +1,178 @@
+{
+  "cohorts": [
+    {
+      "id": "commuter",
+      "label": "Two-wheeler commuter",
+      "context": "40-minute morning ride, engine and traffic noise, phone in pocket — one ear on the drama, one eye on the road. Wants the story to grab fast; has no patience for setup that never pays.",
+      "start_patience": 4.5,
+      "sensitivity": {
+        "EXPOSITION_STACK":   2.0,
+        "NO_OPEN_QUESTION":   1.9,
+        "PACING_FLAT":        1.7,
+        "STAKES_TOO_LOW":     1.5,
+        "PAYOFF_TOO_FAR":     1.4,
+        "UNCLEAR_POV":        1.2,
+        "CHARACTER_OVERLOAD": 1.0,
+        "DIALOGUE_UNVOICED":  0.9,
+        "TROPE_FATIGUE":      0.6,
+        "TONAL_WHIPLASH":     0.5
+      },
+      "replenish": {
+        "QUESTION_OPENED":   1.9,
+        "TENSION_SPIKE":     1.8,
+        "STAKES_ESCALATED":  1.6,
+        "EMOTIONAL_HIT":     1.3,
+        "VOICE_DISTINCTIVE": 1.0,
+        "TROPE_HIT":         0.7,
+        "NOVEL_PREMISE":     0.6
+      },
+      "seat_count": 5,
+      "calibrated_from": 0
+    },
+    {
+      "id": "kitchen",
+      "label": "Kitchen multitasker",
+      "context": "Cooking dinner with kids nearby — phone propped against the fruit bowl, audio cutting in and out behind other noise. Follows by voice alone; loses the thread the moment too many characters speak at once.",
+      "start_patience": 5.5,
+      "sensitivity": {
+        "CHARACTER_OVERLOAD": 2.0,
+        "DIALOGUE_UNVOICED":  1.8,
+        "UNCLEAR_POV":        1.7,
+        "EXPOSITION_STACK":   1.4,
+        "PACING_FLAT":        1.2,
+        "NO_OPEN_QUESTION":   1.1,
+        "STAKES_TOO_LOW":     1.0,
+        "TONAL_WHIPLASH":     0.9,
+        "PAYOFF_TOO_FAR":     0.7,
+        "TROPE_FATIGUE":      0.5
+      },
+      "replenish": {
+        "VOICE_DISTINCTIVE": 2.0,
+        "EMOTIONAL_HIT":     1.7,
+        "TENSION_SPIKE":     1.4,
+        "QUESTION_OPENED":   1.2,
+        "STAKES_ESCALATED":  1.0,
+        "TROPE_HIT":         0.7,
+        "NOVEL_PREMISE":     0.5
+      },
+      "seat_count": 5,
+      "calibrated_from": 0
+    },
+    {
+      "id": "night_rider",
+      "label": "Night-shift solo driver",
+      "context": "Six hours alone in a cab or delivery van after midnight. Wants something dense enough to keep the mind alive but patient enough to let ideas breathe. Bored by emotional flatlining; equally bored by pure noise.",
+      "start_patience": 8.5,
+      "sensitivity": {
+        "TONAL_WHIPLASH":     1.8,
+        "STAKES_TOO_LOW":     1.6,
+        "PACING_FLAT":        1.5,
+        "PAYOFF_TOO_FAR":     1.3,
+        "EXPOSITION_STACK":   1.0,
+        "NO_OPEN_QUESTION":   0.9,
+        "CHARACTER_OVERLOAD": 0.8,
+        "TROPE_FATIGUE":      0.7,
+        "UNCLEAR_POV":        0.6,
+        "DIALOGUE_UNVOICED":  0.5
+      },
+      "replenish": {
+        "QUESTION_OPENED":   1.6,
+        "STAKES_ESCALATED":  1.8,
+        "EMOTIONAL_HIT":     1.5,
+        "TENSION_SPIKE":     1.4,
+        "NOVEL_PREMISE":     1.2,
+        "VOICE_DISTINCTIVE": 1.0,
+        "TROPE_HIT":         0.6
+      },
+      "seat_count": 5,
+      "calibrated_from": 0
+    },
+    {
+      "id": "metro_pro",
+      "label": "Metro commute professional",
+      "context": "Headphones in, daily commute, has consumed hundreds of audio dramas. Forensically attuned to clichés — a familiar structure or a recycled character beat lands like a small betrayal.",
+      "start_patience": 5.8,
+      "sensitivity": {
+        "TROPE_FATIGUE":      2.0,
+        "DIALOGUE_UNVOICED":  1.7,
+        "EXPOSITION_STACK":   1.5,
+        "UNCLEAR_POV":        1.3,
+        "PACING_FLAT":        1.2,
+        "NO_OPEN_QUESTION":   1.1,
+        "CHARACTER_OVERLOAD": 0.9,
+        "TONAL_WHIPLASH":     0.8,
+        "STAKES_TOO_LOW":     0.7,
+        "PAYOFF_TOO_FAR":     0.6
+      },
+      "replenish": {
+        "NOVEL_PREMISE":     2.0,
+        "VOICE_DISTINCTIVE": 1.8,
+        "QUESTION_OPENED":   1.4,
+        "EMOTIONAL_HIT":     1.2,
+        "STAKES_ESCALATED":  1.0,
+        "TENSION_SPIKE":     0.8,
+        "TROPE_HIT":         0.4
+      },
+      "seat_count": 5,
+      "calibrated_from": 0
+    },
+    {
+      "id": "sleep",
+      "label": "Wind-down listener",
+      "context": "Lying in bed, lights off, wanting to drift into the story rather than be demanded of. Any sudden tonal shift or pile-up of characters shatters the mood and puts them on their phone instead.",
+      "start_patience": 5.2,
+      "sensitivity": {
+        "TONAL_WHIPLASH":     2.0,
+        "CHARACTER_OVERLOAD": 1.9,
+        "UNCLEAR_POV":        1.6,
+        "EXPOSITION_STACK":   1.3,
+        "STAKES_TOO_LOW":     0.9,
+        "PACING_FLAT":        0.8,
+        "DIALOGUE_UNVOICED":  0.8,
+        "NO_OPEN_QUESTION":   0.7,
+        "PAYOFF_TOO_FAR":     0.6,
+        "TROPE_FATIGUE":      0.5
+      },
+      "replenish": {
+        "EMOTIONAL_HIT":     2.0,
+        "VOICE_DISTINCTIVE": 1.8,
+        "TENSION_SPIKE":     0.6,
+        "QUESTION_OPENED":   1.2,
+        "STAKES_ESCALATED":  0.8,
+        "TROPE_HIT":         1.0,
+        "NOVEL_PREMISE":     1.1
+      },
+      "seat_count": 5,
+      "calibrated_from": 0
+    },
+    {
+      "id": "diaspora",
+      "label": "Nostalgic diaspora listener",
+      "context": "Grew up with this culture, now lives abroad. Will sit through a slow opening without complaint because they came for texture and home — but any detail that rings false snaps the spell immediately.",
+      "start_patience": 8.0,
+      "sensitivity": {
+        "DIALOGUE_UNVOICED":  2.0,
+        "TROPE_FATIGUE":      1.8,
+        "CHARACTER_OVERLOAD": 0.7,
+        "UNCLEAR_POV":        0.9,
+        "EXPOSITION_STACK":   0.6,
+        "NO_OPEN_QUESTION":   0.5,
+        "TONAL_WHIPLASH":     1.5,
+        "STAKES_TOO_LOW":     0.8,
+        "PAYOFF_TOO_FAR":     0.7,
+        "PACING_FLAT":        0.5
+      },
+      "replenish": {
+        "VOICE_DISTINCTIVE": 2.0,
+        "EMOTIONAL_HIT":     1.9,
+        "TROPE_HIT":         1.6,
+        "NOVEL_PREMISE":     1.3,
+        "QUESTION_OPENED":   1.0,
+        "STAKES_ESCALATED":  0.9,
+        "TENSION_SPIKE":     0.6
+      },
+      "seat_count": 5,
+      "calibrated_from": 0
+    }
+  ]
+}
