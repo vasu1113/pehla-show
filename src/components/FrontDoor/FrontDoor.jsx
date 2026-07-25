@@ -24,9 +24,9 @@ const hairFor = (id) => {
 };
 
 export function FrontDoor({ onStart }) {
-  const defaultPreset = presets.find((p) => p.id === 'bharat_prime_time');
-  const [selected, setSelected] = useState(defaultPreset?.personas ?? []);
-  const [activePreset, setActivePreset] = useState('bharat_prime_time');
+  // The room starts empty — you cast it yourself (drag/click). No auto-selection.
+  const [selected, setSelected] = useState([]);
+  const [activePreset, setActivePreset] = useState(null);
   const [category, setCategory] = useState('all');
   const [query, setQuery] = useState('');
   const [script, setScript] = useState('');
