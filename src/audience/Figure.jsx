@@ -1,74 +1,54 @@
 /**
- * An audience member — a little illustrated person (Humaaans-style: flat, warm,
- * rounded), seen from behind-above the way you see the row in front of you.
- * Individuality comes from hair / skin / clothing variants, so a seated crowd
- * reads as thirty different people, not thirty shadows.
+ * An audience member — a hollow, human-shaped figure seen from behind-above,
+ * the way you see the row in front of you at the cinema. Clean and quiet, with
+ * just a little variety (hair) so the crowd reads as different people without
+ * getting busy. Monochrome, in the cinema palette.
  *
- * Kept to warm neutrals so it stays inside the cinema palette (no new hue).
- * Later a `pose` prop drives B6 body language; for now they sit.
+ * `tone` (0..1) subtly varies how strongly the figure reads, for depth.
+ * Later a `pose` prop will drive B6 body language; for now they sit.
  */
 
-const SKINS = ['#cbb89d', '#b39c7e', '#9c8468', '#d6c3a6'];
-const HAIRS = ['#17130f', '#2a2018', '#3a2b1e', '#4a3a2b'];
-const CLOTHS = ['#26221c', '#1a1712', '#302b23', '#211d17', '#38322a'];
-
-function Hair({ variant, color }) {
-  const crown =
-    'M12.5 24 C12 13 32 13 31.5 24 C31.5 27 29 30 26 31 L18 31 C15 30 12.5 27 12.5 24 Z';
+function Hair({ variant }) {
+  const cap = 'M13 22 C13 12 31 12 31 22 C27 18 17 18 13 22 Z';
   switch (variant) {
-    case 1: // bun
+    case 1: // small bun
       return (
-        <g fill={color}>
-          <path d={crown} />
-          <ellipse cx="22" cy="11.5" rx="4" ry="3.6" />
+        <g className="fig-hair">
+          <path d={cap} />
+          <ellipse cx="22" cy="11.6" rx="3.4" ry="3" />
         </g>
       );
-    case 2: // short / cropped — more head visible
-      return <path fill={color} d="M13 22 C13 14 31 14 31 22 C28 18 16 18 13 22 Z" />;
-    case 3: // white cap (topi) — an elder
+    case 2: // a little longer at the nape
       return (
-        <g>
-          <path fill="#d9d2c4" d="M12.5 22 C13 13.5 31 13.5 31.5 22 C27 19.5 17 19.5 12.5 22 Z" />
-          <rect x="12" y="21" width="20" height="2.2" rx="1.1" fill="#c3bba8" />
+        <g className="fig-hair">
+          <path d={cap} />
+          <path d="M14 28 L30 28 L28 36 L16 36 Z" />
         </g>
       );
-    case 4: // longer hair down the nape
-      return (
-        <g fill={color}>
-          <path d={crown} />
-          <path d="M15 29 L29 29 L27 38 L17 38 Z" />
-        </g>
-      );
-    default: // full head of hair
-      return <path fill={color} d={crown} />;
+    case 3: // cropped short — more head shows
+      return <path className="fig-hair" d="M14 21 C14 14 30 14 30 21 C27 18 17 18 14 21 Z" />;
+    default: // full cap
+      return <path className="fig-hair" d={cap} />;
   }
 }
 
-export function Figure({ tone = 0.92, skin = 0, hair = 0, cloth = 0 }) {
-  const s = SKINS[skin % SKINS.length];
-  const h = HAIRS[hair % HAIRS.length];
-  const c = CLOTHS[cloth % CLOTHS.length];
+export function Figure({ tone = 0.85, hair = 0 }) {
   return (
     <svg className="figure-svg" viewBox="0 0 44 64" width="44" height="64" style={{ opacity: tone }}>
+      {/* cast shadow on the floor */}
       <ellipse className="fig-shadow" cx="22" cy="61" rx="15" ry="4" />
 
-      {/* torso / shoulders */}
-      <path
-        d="M6 62 C5 43 12 37 22 36 C32 37 39 43 38 62 Z"
-        fill={c}
-        stroke="rgba(237,232,223,0.14)"
-        strokeWidth="0.8"
-      />
+      {/* torso / shoulders — a folded, upholstered silhouette */}
+      <path className="fig-body" d="M7 62 C6 44 12 37 22 36 C32 37 38 44 37 62 Z" />
+      {/* shoulder seam, gives the back some form */}
+      <path className="fig-seam" d="M12 46 C16 42 28 42 32 46" />
 
       {/* neck */}
-      <rect x="18" y="30" width="8" height="8" rx="3" fill={s} />
+      <path className="fig-neck" d="M18 37 L18 31 L26 31 L26 37 Z" />
 
-      {/* ears + head */}
-      <circle cx="12.6" cy="24" r="1.9" fill={s} />
-      <circle cx="31.4" cy="24" r="1.9" fill={s} />
-      <ellipse cx="22" cy="23" rx="9.5" ry="10.5" fill={s} />
-
-      <Hair variant={hair} color={h} />
+      {/* head */}
+      <ellipse className="fig-head" cx="22" cy="23" rx="9.5" ry="10.5" />
+      <Hair variant={hair} />
 
       {/* soft rim light off the screen */}
       <path className="fig-rim" d="M13.5 24 C13 17 15 14 18 13 C15 16 14.5 20 15 24 Z" />
