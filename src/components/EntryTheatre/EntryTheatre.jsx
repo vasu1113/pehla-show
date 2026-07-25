@@ -15,7 +15,15 @@ const chatter = [
 
 const clamp = (value) => Math.max(0, Math.min(1, value));
 
-export function EntryTheatre() {
+function statusCopy(status, progress, error) {
+  if (status === 'error') return error || 'The analysis could not be completed.';
+  if (status === 'ready') return 'THE SCREENING IS READY';
+  if (status === 'submitting') return 'SENDING YOUR SCRIPT TO THE ROOM';
+  if (status === 'loading') return 'LOADING THE DEMO SCREENING';
+  return progress?.message?.toUpperCase() || 'THE ROOM IS READING YOUR SCRIPT';
+}
+
+export function EntryTheatre({ analysisStatus, progress, error }) {
   const { currentSeconds } = useClock();
   const people = useMemo(() => generateAudience(), []);
   const door = clamp(currentSeconds / 2.2);
@@ -27,7 +35,10 @@ export function EntryTheatre() {
     <main className="entry-theatre">
       <div className={`entry-screen${bridge ? ' is-bridging' : ''}`}>
         <span>{bridge ? bridgeLine : 'THE SCREEN IS WAITING'}</span>
-        {bridge && <small>projection begins when the room is ready</small>}
+        <small className={analysisStatus === 'error' ? 'is-error' : ''}>
+          {statusCopy(analysisStatus, progress, error)}
+          {progress?.pct != null && analysisStatus === 'analysing' ? ` · ${progress.pct}%` : ''}
+        </small>
       </div>
       <div className="entry-proscenium" aria-hidden="true">
         <div className="entry-valance"><i /><i /><i /><i /><i /></div>

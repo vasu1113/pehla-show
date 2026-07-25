@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import presets from '../../data/presets.json';
 import { Figure } from '../../audience/Figure';
 import { usePersonaLibrary } from '../../data/usePersonaLibrary';
@@ -57,6 +57,16 @@ export function FrontDoor({ onStart }) {
     setSelected((cur) => (!seatable(id) || cur.includes(id) || cur.length >= 6 ? cur : [...cur, id]));
   const remove = (id) => setSelected((cur) => cur.filter((x) => x !== id));
   const markCustom = () => setActivePreset('custom');
+
+  // When the live library arrives, remove bundled preset ids that the backend
+  // cannot actually seat. Otherwise six invisible stale ids occupy all six
+  // slots while the UI truthfully displays "0 / 6 selected".
+  useEffect(() => {
+    const selectable = new Set(
+      personas.filter((person) => person.seeded).map((person) => person.id),
+    );
+    setSelected((current) => current.filter((id) => selectable.has(id)));
+  }, [personas]);
   const choosePreset = (preset) => {
     setActivePreset(preset.id);
     // Only seat personas the library actually has; a preset can name one the

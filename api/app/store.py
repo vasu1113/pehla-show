@@ -5,13 +5,13 @@ from threading import RLock
 from types import ModuleType
 from typing import Any
 
-from app import config
-from app.models import Persona, Progress, Run
+from app import analysis_config, config
+from app.models import AnalysisConfig, Persona, Progress, Run
 
 
 _runs: dict[str, Run] = {}
 _progress: dict[str, Progress] = {}
-_pinned: dict[tuple[str, str], str] = {}
+_pinned: dict[tuple[str, str, str], str] = {}
 _lock = RLock()
 
 
@@ -108,8 +108,12 @@ def _load() -> None:
             content_hash = raw.get("content_hash")
             variant = raw.get("variant")
             run_id = raw.get("run_id")
-            if all(isinstance(value, str) for value in (content_hash, variant, run_id)):
-                _pinned[(content_hash, variant)] = run_id
+            analysis_key = raw.get("analysis_key", "legacy")
+            if all(
+                isinstance(value, str)
+                for value in (content_hash, variant, analysis_key, run_id)
+            ):
+                _pinned[(content_hash, variant, analysis_key)] = run_id
 
 
 def _persist_runs() -> None:
@@ -139,16 +143,22 @@ def _persist_pins() -> None:
             {
                 "content_hash": content_hash,
                 "variant": variant,
+                "analysis_key": analysis_key,
                 "run_id": run_id,
             }
-            for (content_hash, variant), run_id in sorted(_pinned.items())
+            for (content_hash, variant, analysis_key), run_id
+            in sorted(_pinned.items())
         ],
     )
 
 
-def save(run: Run) -> None:
+def save(
+    run: Run,
+    raw_text: str | None = None,
+    content_hash: str | None = None,
+) -> None:
     if config.STORE_BACKEND == "supabase":
-        _backend().save(run)
+        _backend().save(run, raw_text, content_hash)
         return
     with _lock:
         _runs[run.run_id] = run.model_copy(deep=True)
@@ -180,13 +190,35 @@ def get_progress(run_id: str) -> Progress | None:
         return progress.model_copy(deep=True) if progress is not None else None
 
 
-def find_pinned(content_hash: str, variant: str = "original") -> Run | None:
+def find_pinned(
+    content_hash: str,
+    variant: str = "original",
+    requested: AnalysisConfig | None = None,
+) -> Run | None:
     if config.STORE_BACKEND == "supabase":
-        return _backend().find_pinned(content_hash, variant)
+        return _backend().find_pinned(content_hash, variant, requested)
     with _lock:
-        run_id = _pinned.get((content_hash, variant))
+        if requested is None:
+            run_id = next(
+                (
+                    candidate
+                    for (digest, run_variant, _), candidate in _pinned.items()
+                    if digest == content_hash and run_variant == variant
+                ),
+                None,
+            )
+        else:
+            run_id = _pinned.get(
+                (
+                    content_hash,
+                    variant,
+                    analysis_config.fingerprint(requested),
+                )
+            )
         run = _runs.get(run_id) if run_id is not None else None
-        return run.model_copy(deep=True) if run is not None else None
+        if run is None or not analysis_config.matches(run, requested):
+            return None
+        return run.model_copy(deep=True)
 
 
 def pin(run_id: str, content_hash: str) -> None:
@@ -197,7 +229,13 @@ def pin(run_id: str, content_hash: str) -> None:
         run = _runs.get(run_id)
         if run is None:
             raise KeyError(f"Unknown run id: {run_id}")
-        _pinned[(content_hash, run.variant)] = run_id
+        _pinned[
+            (
+                content_hash,
+                run.variant,
+                analysis_config.fingerprint(run.analysis_config),
+            )
+        ] = run_id
         _persist_pins()
 
 

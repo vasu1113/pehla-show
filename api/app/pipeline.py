@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime, timezone
 
-from app import cache, config, models, store
+from app import analysis_config, cache, config, models, store
 from app.blindfold import BlindfoldViolation
 from app.llm import LLM, get_llm
 from app.prompts.expert import LENSES as EXPERT_LENSES
@@ -259,25 +259,30 @@ async def analyse(
     title: str,
     persona_ids: list[str] | None = None,
 ) -> models.Run:
+    personas = _load_personas(persona_ids)
     run = models.Run(
         run_id=run_id,
         status="analysing",
         created_at=_now(),
+        analysis_config=analysis_config.build(
+            [persona.id for persona in personas]
+        ),
         script=_script_meta(raw_text, title),
     )
-    store.save(run)
+    digest = a1_parse.content_hash(raw_text)
+    store.save(run, raw_text=raw_text, content_hash=digest)
     _progress(run_id, models.Stage.QUEUED, 0)
 
     try:
         _progress(run_id, models.Stage.PARSING_BEATS, 10)
-        digest = a1_parse.content_hash(raw_text)
-        beats = cache.get(digest)
+        beat_cache_key = f"{config.PARSER_VERSION}:{digest}"
+        beats = cache.get(beat_cache_key)
         llm = get_llm()
         if beats is None:
             beats = await a1_parse.parse_beats(raw_text, llm)
             if not beats:
                 raise ValueError("Beat parser returned no beats.")
-            cache.put(digest, beats)
+            cache.put(beat_cache_key, beats)
     except Exception as error:
         return _terminal_error(
             run,
@@ -300,7 +305,6 @@ async def analyse(
 
     try:
         _progress(run_id, models.Stage.SEATING_AUDIENCE, 25)
-        personas = _load_personas(persona_ids)
         kept, audience, drops, warnings = await _screen(
             run_id,
             beats,

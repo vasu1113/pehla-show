@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { clock, useClock } from '../clock/useClock';
-import { FILM_CHUNKS, buildTimeline, chunkAtTime, VERDICT_SECONDS } from './filmData';
+import { buildTimeline, chunkAtTime, filmChunksForRun, VERDICT_SECONDS } from './filmData';
+import { useRun } from '../data/useRun';
 import './FilmStrip.css';
 
 // Cross-fade length when the clock crosses into a new chunk.
@@ -49,8 +50,10 @@ function kenBurns(index, progress) {
  */
 export function FilmStrip() {
   const { currentSeconds } = useClock();
+  const { run } = useRun();
 
-  const { timed, total } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
+  const chunks = useMemo(() => filmChunksForRun(run), [run]);
+  const { timed, total } = useMemo(() => buildTimeline(chunks), [chunks]);
 
   // Clock runs the film's length PLUS the verdict tail (B6).
   useEffect(() => {

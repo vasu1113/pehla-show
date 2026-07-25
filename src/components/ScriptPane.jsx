@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { clock, useClock } from '../clock/useClock';
 import { formatTime } from '../clock/format';
-import { FILM_CHUNKS, buildTimeline, chunkAtTime } from '../film/filmData';
+import { buildTimeline, chunkAtTime, filmChunksForRun } from '../film/filmData';
+import { useRun } from '../data/useRun';
 import './ScriptPane.css';
 
 /**
@@ -14,7 +15,9 @@ import './ScriptPane.css';
  */
 export function ScriptPane() {
   const { currentSeconds } = useClock();
-  const { timed } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
+  const { run } = useRun();
+  const chunks = useMemo(() => filmChunksForRun(run), [run]);
+  const { timed } = useMemo(() => buildTimeline(chunks), [chunks]);
   const { index } = chunkAtTime(timed, currentSeconds);
 
   const scrollRef = useRef(null);

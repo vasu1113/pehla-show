@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from app import cache, config, models, pipeline, store
+from app import analysis_config, cache, config, models, pipeline, store
 from app.main import app
 from app.stages.a1_parse import content_hash
 
@@ -90,10 +90,12 @@ def test_progress_uses_contract_stage_messages(
 
 
 def test_pinned_run_is_returned_without_reanalysis(client: TestClient) -> None:
+    persona_ids = [persona.id for persona in store.list_personas()]
     pinned = models.Run(
         run_id="run_pinned",
         status="ready",
         created_at="2026-07-25T00:00:00+00:00",
+        analysis_config=analysis_config.build(persona_ids),
         script=models.ScriptMeta(
             id=content_hash(HERO_SCRIPT)[:12],
             title="Pinned",
@@ -112,6 +114,35 @@ def test_pinned_run_is_returned_without_reanalysis(client: TestClient) -> None:
         "status": "ready",
         "cached": True,
     }
+
+
+def test_pinned_run_for_a_different_room_is_not_reused(
+    client: TestClient,
+) -> None:
+    requested = [persona.id for persona in store.list_personas()]
+    pinned = models.Run(
+        run_id="run_other_room",
+        status="ready",
+        created_at="2026-07-25T00:00:00+00:00",
+        analysis_config=analysis_config.build(list(reversed(requested))),
+        script=models.ScriptMeta(
+            id=content_hash(HERO_SCRIPT)[:12],
+            title="Other room",
+            duration_sec=1,
+            word_count=len(HERO_SCRIPT.split()),
+        ),
+    )
+    store.save(pinned)
+    store.pin(pinned.run_id, content_hash(HERO_SCRIPT))
+
+    response = client.post(
+        "/analyse",
+        json={"raw_text": HERO_SCRIPT, "persona_ids": requested},
+    )
+
+    assert response.status_code == 202
+    assert response.json()["run_id"] != pinned.run_id
+    _poll(client, response.json()["run_id"])
 
 
 def test_one_failed_cohort_degrades_the_run(

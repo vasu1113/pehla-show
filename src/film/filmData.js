@@ -64,6 +64,28 @@ export const TIME_SCALE = 0.2;
 // end sequence lives on the same timeline and scrubbing rewinds it too.
 export const VERDICT_SECONDS = 6.5;
 
+/**
+ * Turn the backend's real beat contract into the visual film contract.
+ * The bundled film remains available only while no run has been supplied
+ * (for the explicit mock/offline path and empty-state rendering).
+ */
+export function filmChunksForRun(run) {
+  if (!run?.beats?.length) return FILM_CHUNKS;
+  return run.beats.map((beat) => {
+    const text = beat.text_span?.trim() ?? '';
+    const firstLine = text.split(/(?<=[.!?])\s+/)[0] || `Beat ${beat.index + 1}`;
+    return {
+      id: `beat_${beat.id}`,
+      beatId: beat.id,
+      type: String(beat.type ?? 'beat').replaceAll('_', ' ').toUpperCase(),
+      tension: Math.max(0, Math.min(1, ((beat.tension_delta ?? 0) + 3) / 6)),
+      duration: Math.max(1, (beat.end_sec ?? 0) - (beat.start_sec ?? 0)),
+      line: firstLine,
+      script: text,
+    };
+  });
+}
+
 /** Cumulative start time of each chunk, plus the film's total length.
  *  Durations are scaled here, so chunks, thoughts and critic notes all
  *  compress together — the single knob for demo length. */

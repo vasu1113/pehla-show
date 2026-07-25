@@ -333,7 +333,7 @@ def test_supabase_run_round_trip(
     _use_supabase(monkeypatch, client)
     run = _run()
 
-    store.save(run)
+    store.save(run, raw_text="A door opens.", content_hash="full-digest")
 
     assert store.get(run.run_id) == run
 
@@ -344,7 +344,11 @@ def test_save_upserts_script_before_run(
     client = FakeClient()
     _use_supabase(monkeypatch, client)
 
-    store.save(_run())
+    store.save(
+        _run(),
+        raw_text="A door opens.",
+        content_hash="full-digest",
+    )
 
     assert client.calls[:2] == [("scripts", "upsert"), ("runs", "upsert")]
 
@@ -356,8 +360,8 @@ def test_save_replaces_thirty_audience_rows(
     _use_supabase(monkeypatch, client)
     run = _run()
 
-    store.save(run)
-    store.save(run)
+    store.save(run, raw_text="A door opens.", content_hash="full-digest")
+    store.save(run, raw_text="A door opens.", content_hash="full-digest")
 
     assert len(client.tables["audience"]) == 30
     assert {row["seat"] for row in client.tables["audience"]} == set(range(30))
@@ -372,7 +376,11 @@ def test_pin_then_find_pinned_resolves_run(
     _use_supabase(monkeypatch, client)
     run = _run()
 
-    store.save(run)
+    store.save(
+        run,
+        raw_text="A door opens.",
+        content_hash="full-content-digest",
+    )
     store.pin(run.run_id, "full-content-digest")
 
     assert store.find_pinned("full-content-digest") == run

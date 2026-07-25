@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { clock, useClock } from '../clock/useClock';
-import { FILM_CHUNKS, buildTimeline } from '../film/filmData';
+import { buildTimeline, filmChunksForRun } from '../film/filmData';
 import { runSecToClock, useRun } from '../data/useRun';
 import { highlightStore } from '../highlight/highlightStore';
 import './AnalysisPanel.css';
@@ -156,12 +156,13 @@ function Scorecard({ run }) {
 
 function AttentionStory({ run }) {
   const dropsByBeat = new Map((run.drop_events ?? []).map((drop) => [drop.beat_id, drop]));
+  const viewersLeft = Math.max(0, run.summary.seats_total - run.summary.seats_retained);
   return (
     <section className="an-story">
       <div className="an-story-head">
         <div>
           <div className="an-label">ATTENTION STORY</div>
-          <p>Five viewers left. The wider room showed moments of hesitation before each exit.</p>
+          <p>{viewersLeft} viewers left during this screening.</p>
         </div>
         <div className="an-story-key"><i /> attention risk <b /> drop marker</div>
       </div>
@@ -294,8 +295,9 @@ function TheGap({ run, total }) {
  * multiples, and the key-metrics scorecard, all from the one simulation.
  */
 export function AnalysisPanel() {
-  const { timed, total } = useMemo(() => buildTimeline(FILM_CHUNKS), []);
   const { run } = useRun();
+  const chunks = useMemo(() => filmChunksForRun(run), [run]);
+  const { total } = useMemo(() => buildTimeline(chunks), [chunks]);
 
   if (!run?.summary) {
     return <div className="analysis-panel"><div className="an-head">ANALYSIS · THE ROOM, MEASURED</div></div>;

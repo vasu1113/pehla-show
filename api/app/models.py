@@ -352,6 +352,20 @@ class Warning(BaseModel):
     message: str
 
 
+class AnalysisConfig(BaseModel):
+    """The exact analysis recipe used for a Run.
+
+    Track C owns the persona profiles. This manifest only records which room
+    and algorithm versions were used so caching and validation remain honest.
+    """
+
+    persona_ids: list[str] = Field(default_factory=list)
+    pipeline_version: str = "1"
+    parser_version: str = "1"
+    scorer_version: str = "persona-pass-v1"
+    simulation_version: str = "patience-v1"
+
+
 class Run(BaseModel):
     """Everything the UI renders comes from this object and nothing else."""
 
@@ -361,6 +375,7 @@ class Run(BaseModel):
     variant: Literal["original", "fixed"] = "original"
     status: Literal["analysing", "ready", "error"] = "analysing"
     created_at: str
+    analysis_config: AnalysisConfig | None = None
 
     script: ScriptMeta
     beats: list[Beat] = Field(default_factory=list)

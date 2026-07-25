@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { CRITICS, buildCriticSchedule, activeCriticNotes } from './criticsData';
 import { useClock } from '../clock/useClock';
-import { FILM_CHUNKS, buildTimeline } from '../film/filmData';
+import { buildTimeline, filmChunksForRun } from '../film/filmData';
+import { useRun } from '../data/useRun';
 import './CriticsBalcony.css';
 
 /**
@@ -26,10 +27,12 @@ function CriticFigure() {
  */
 export function CriticBoxes({ side, silent = false }) {
   const { currentSeconds } = useClock();
+  const { run } = useRun();
+  const chunks = useMemo(() => filmChunksForRun(run), [run]);
   const schedule = useMemo(() => {
-    const { timed } = buildTimeline(FILM_CHUNKS);
+    const { timed } = buildTimeline(chunks);
     return buildCriticSchedule(timed);
-  }, []);
+  }, [chunks]);
 
   const active = silent ? [] : activeCriticNotes(schedule, currentSeconds);
   const noteByCritic = new Map(active.map((a) => [a.event.criticId, a]));

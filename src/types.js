@@ -145,8 +145,6 @@
  * @property {number} seats_retained
  * @property {number|null} biggest_cliff_sec
  * @property {Object.<string, number>} cohort_retention   // cohort id -> 0..1
- * @property {{timestamp:number, seats_lost:number, reason_label:string}[]} [top_losses]
- *   // NOT from the API. Added client-side by normalizeRun(); absent on a raw Run.
  */
 
 /**

@@ -68,3 +68,12 @@ MIN_WORDS = 200                 # below this, /analyse returns 400
 MAX_WORDS = 8000                # above this, /analyse returns 413
 
 CONTRACT_VERSION = "1.0"
+
+# ─── analysis provenance ─────────────────────────────────────────────────
+# These versions travel with every Run and participate in pinned-run lookup.
+# A script analysed with a different room or algorithm must never silently
+# receive an older cached result.
+PIPELINE_VERSION = os.getenv("PIPELINE_VERSION", "1")
+PARSER_VERSION = os.getenv("PARSER_VERSION", "1")
+SCORER_VERSION = os.getenv("SCORER_VERSION", "persona-pass-v1")
+SIMULATION_VERSION = os.getenv("SIMULATION_VERSION", "patience-v1")
