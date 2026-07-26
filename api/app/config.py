@@ -23,6 +23,14 @@ RUNS_DIR = API_DIR / ".runs"
 STORE_BACKEND = os.getenv("STORE_BACKEND", "file")  # file | supabase
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+CORS_ORIGINS = tuple(
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:5173,http://localhost:5177",
+    ).split(",")
+    if origin.strip()
+)
 
 # ─── determinism ──────────────────────────────────────────────────────────
 # A deterministic sim means the demo produces the same room every time you
