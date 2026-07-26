@@ -9,13 +9,9 @@ import { apiUrl } from './api';
  * straight back as `persona_ids`, so picking something the backend has never
  * heard of is a 400 at the worst possible moment.
  *
- * But the backend has six personas seeded and the library is meant to hold
- * fifty, so letting the API replace the list outright turns "pick six from
- * fifty" into "pick the only six there are". Instead the two are unioned: an
- * API persona is `seeded` and selectable, a bundled-only one renders greyed
- * with its own reason. The shelf shows what the product is; the selection
- * stays truthful about what will actually run. As Track C seeds the rest, the
- * greyed entries light up on their own with no code change here.
+ * Once the API responds, its Supabase library is the complete authority. The
+ * bundled data is strictly an offline fallback and must never appear alongside
+ * live personas.
  *
  * When /personas does not answer — no backend, demo laptop offline — the
  * bundled library renders on its own so the front door is never a blank page,
@@ -51,22 +47,12 @@ export function usePersonaLibrary() {
         // An empty library is not an answer worth acting on — keep the bundle.
         if (!live || fromApi.length === 0) return;
 
-        const seeded = new Map(fromApi.map((persona) => [persona.id, persona]));
-        const union = bundled.map((persona) =>
-          withBrowseDefaults({
-            ...persona,
-            ...seeded.get(persona.id),
-            seeded: seeded.has(persona.id),
-          }),
-        );
-        // Anything the API knows that the shelf does not — Track C seeding
-        // past the bundled fifty — belongs on screen too.
-        const known = new Set(bundled.map((persona) => persona.id));
-        for (const persona of fromApi) {
-          if (!known.has(persona.id)) union.push(withBrowseDefaults({ ...persona, seeded: true }));
-        }
-
-        setState({ personas: union, source: 'api' });
+        setState({
+          personas: fromApi.map((persona) =>
+            withBrowseDefaults({ ...persona, seeded: true }),
+          ),
+          source: 'api',
+        });
       })
       .catch(() => {
         /* bundled library stays on screen */

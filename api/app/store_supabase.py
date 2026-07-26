@@ -41,19 +41,13 @@ def _data(response: Any) -> list[dict[str, Any]]:
 
 
 def list_personas() -> list[Persona]:
-    try:
-        response = (
-            get_client()
-            .table("personas")
-            .select("id, label, persona_type, prompt, calibrated_from")
-            .execute()
-        )
-        return [Persona.model_validate(row) for row in _data(response)]
-    except Exception:
-        logger.exception("Could not list Supabase personas; using file library")
-        from app import store
-
-        return store._list_file_personas()
+    response = (
+        get_client()
+        .table("personas")
+        .select("id, label, persona_type, prompt, calibrated_from")
+        .execute()
+    )
+    return [Persona.model_validate(row) for row in _data(response)]
 
 
 def get_personas(ids: list[str]) -> list[Persona]:
