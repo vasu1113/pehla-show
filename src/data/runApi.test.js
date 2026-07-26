@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   ApiResponseError,
+  isNetworkUnavailable,
   startRun,
   waitForRun,
-  withNetworkFallback,
 } from './runApi.js';
 
 test('startRun sends the exact script and selected personas', async () => {
@@ -65,23 +65,10 @@ test('waitForRun returns backend walkouts without rewriting them', async () => {
   assert.equal(run.audience.filter((member) => member.left_at_sec != null).length, 2);
 });
 
-test('network-unavailable analysis falls back to the bundled demo run', async () => {
-  const mock = { run_id: 'run_pinned_01', status: 'ready' };
-  const result = await withNetworkFallback(
-    async () => { throw new TypeError('Failed to fetch'); },
-    async () => mock,
-  );
-
-  assert.equal(result.source, 'mock-fallback');
-  assert.deepEqual(result.run, mock);
-});
-
-test('server validation errors do not use the demo fallback', async () => {
-  await assert.rejects(
-    withNetworkFallback(
-      async () => { throw new ApiResponseError('Script must contain at least 200 words.', 400); },
-      async () => ({ run_id: 'run_pinned_01' }),
-    ),
-    /at least 200 words/,
+test('only a rejected request is treated as an unavailable service', () => {
+  assert.equal(isNetworkUnavailable(new TypeError('Failed to fetch')), true);
+  assert.equal(
+    isNetworkUnavailable(new ApiResponseError('Script must contain at least 200 words.', 400)),
+    false,
   );
 });

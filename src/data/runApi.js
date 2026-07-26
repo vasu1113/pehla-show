@@ -22,19 +22,9 @@ async function readPayload(response) {
 }
 
 // Fetch rejects with TypeError when the host is unreachable (for example, a
-// local UI opened without FastAPI running on port 8000). HTTP replies are
-// ApiResponseError instances and must keep their genuine validation/error UI.
+// local UI opened without FastAPI running on port 8000).
 export function isNetworkUnavailable(error) {
   return error instanceof TypeError || error?.name === 'NetworkError';
-}
-
-export async function withNetworkFallback(liveRequest, mockRequest) {
-  try {
-    return { run: await liveRequest(), source: 'live' };
-  } catch (error) {
-    if (!isNetworkUnavailable(error)) throw error;
-    return { run: await mockRequest(), source: 'mock-fallback' };
-  }
 }
 
 export async function startRun(

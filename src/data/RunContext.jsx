@@ -8,10 +8,10 @@ import {
 } from 'react';
 import {
   loadMockRun,
+  isNetworkUnavailable,
   RUN_SOURCE,
   startRun,
   waitForRun,
-  withNetworkFallback,
 } from './runApi';
 
 const RunContext = createContext(null);
@@ -62,46 +62,28 @@ export function RunProvider({ children }) {
         return run;
       }
 
-      const result = await withNetworkFallback(
-        async () => {
-          const started = await startRun({
-            script,
-            personaIds: selected,
-            title,
-          });
+      const started = await startRun({
+        script,
+        personaIds: selected,
+        title,
+      });
+      setState((current) => ({
+        ...current,
+        runId: started.run_id,
+        status: 'analysing',
+      }));
+      const run = await waitForRun(started.run_id, {
+        signal: controller.signal,
+        onUpdate: (update) => {
           setState((current) => ({
             ...current,
-            runId: started.run_id,
-            status: 'analysing',
+            run: update.status === 'analysing' ? current.run : update,
+            status: update.status,
+            progress: update.progress ?? current.progress,
+            error: update.status === 'error' ? runError(update) : null,
           }));
-          return waitForRun(started.run_id, {
-            signal: controller.signal,
-            onUpdate: (update) => {
-              setState((current) => ({
-                ...current,
-                run: update.status === 'analysing' ? current.run : update,
-                status: update.status,
-                progress: update.progress ?? current.progress,
-                error: update.status === 'error' ? runError(update) : null,
-              }));
-            },
-          });
         },
-        () => loadMockRun(fetch, controller.signal),
-      );
-      const run = result.run;
-
-      if (result.source === 'mock-fallback') {
-        setState({
-          run,
-          runId: run.run_id,
-          status: 'ready',
-          progress: null,
-          error: null,
-          source: result.source,
-        });
-        return run;
-      }
+      });
 
       if (run.status === 'error') throw new Error(runError(run));
       return run;
@@ -110,7 +92,9 @@ export function RunProvider({ children }) {
       setState((current) => ({
         ...current,
         status: 'error',
-        error: error instanceof Error ? error.message : String(error),
+        error: isNetworkUnavailable(error)
+          ? 'Analysis service unavailable. Retry.'
+          : error instanceof Error ? error.message : String(error),
       }));
       throw error;
     }
