@@ -23,6 +23,7 @@ RUNS_DIR = API_DIR / ".runs"
 STORE_BACKEND = os.getenv("STORE_BACKEND", "file")  # file | supabase
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+SYNC_PIPELINE = os.getenv("SYNC_PIPELINE", "").lower() in {"1", "true", "yes"}
 CORS_ORIGINS = tuple(
     origin.strip()
     for origin in os.getenv(

@@ -186,15 +186,27 @@ async def start_analysis(body: AnalyseBody) -> JSONResponse:
         raw_text=body.raw_text,
         digest=digest,
     )
-    _start(
-        pipeline.analyse(
-            run_id,
-            body.raw_text,
-            body.title or "Untitled",
-            body.persona_ids,
-        ),
+    analysis = pipeline.analyse(
         run_id,
+        body.raw_text,
+        body.title or "Untitled",
+        body.persona_ids,
     )
+    # A serverless function can stop as soon as its HTTP response is sent.
+    # Complete the work inline there; the local and container deployments keep
+    # the responsive background-worker behaviour.
+    if config.SYNC_PIPELINE:
+        await analysis
+        completed = store.get(run_id)
+        return JSONResponse(
+            {
+                "run_id": run_id,
+                "status": completed.status if completed is not None else "error",
+                "cached": False,
+            },
+            status_code=200,
+        )
+    _start(analysis, run_id)
     return JSONResponse(
         {
             "run_id": run_id,
@@ -268,10 +280,19 @@ async def fix_run(run_id: str, body: FixBody) -> JSONResponse:
             script=parent.script.model_copy(deep=True),
         )
     )
-    _start(
-        pipeline.apply_recommended_fix(parent, selected_fix, fixed_run_id),
-        fixed_run_id,
-    )
+    correction = pipeline.apply_recommended_fix(parent, selected_fix, fixed_run_id)
+    if config.SYNC_PIPELINE:
+        await correction
+        completed = store.get(fixed_run_id)
+        return JSONResponse(
+            {
+                "run_id": fixed_run_id,
+                "status": completed.status if completed is not None else "error",
+                "parent_run_id": parent.run_id,
+            },
+            status_code=200,
+        )
+    _start(correction, fixed_run_id)
     return JSONResponse(
         {
             "run_id": fixed_run_id,
