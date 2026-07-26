@@ -2,6 +2,14 @@ import { apiUrl } from './api.js';
 
 export const RUN_SOURCE = import.meta.env?.VITE_RUN_SOURCE ?? 'live';
 
+export class ApiResponseError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.name = 'ApiResponseError';
+    this.status = status;
+  }
+}
+
 async function readPayload(response) {
   const payload = await response.json().catch(() => ({}));
   if (response.ok) return payload;
@@ -10,7 +18,23 @@ async function readPayload(response) {
   const message = typeof detail === 'string'
     ? detail
     : payload?.error?.message ?? `Request failed (${response.status})`;
-  throw new Error(message);
+  throw new ApiResponseError(message, response.status);
+}
+
+// Fetch rejects with TypeError when the host is unreachable (for example, a
+// local UI opened without FastAPI running on port 8000). HTTP replies are
+// ApiResponseError instances and must keep their genuine validation/error UI.
+export function isNetworkUnavailable(error) {
+  return error instanceof TypeError || error?.name === 'NetworkError';
+}
+
+export async function withNetworkFallback(liveRequest, mockRequest) {
+  try {
+    return { run: await liveRequest(), source: 'live' };
+  } catch (error) {
+    if (!isNetworkUnavailable(error)) throw error;
+    return { run: await mockRequest(), source: 'mock-fallback' };
+  }
 }
 
 export async function startRun(
