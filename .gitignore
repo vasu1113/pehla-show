@@ -22,3 +22,6 @@ npm-debug.log*
 api/.venv/
 api/.runs/
 __pycache__/
+
+# Local Netlify folder
+.netlify
