@@ -29,7 +29,7 @@ class FixBody(BaseModel):
     fix: str | None = None
 
 
-app = FastAPI()
+app = FastAPI(root_path=config.API_ROOT_PATH)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=list(config.CORS_ORIGINS),
