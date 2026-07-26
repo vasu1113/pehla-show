@@ -1,0 +1,24 @@
+.room-voices { display: flex; flex-direction: column; min-height: 0; height: 100%; background: var(--ink); }
+.rv-head { padding: 20px 28px 16px; border-bottom: 1px solid var(--bone-faint); color: var(--bone-dim); font: 13px var(--mono); letter-spacing: .2em; }
+.rv-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 30px 34px 56px; }
+.rv-highlights { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.rv-highlight { margin: 0; padding: 13px; border: 1px solid var(--bone-faint); background: var(--ink-lift); }
+.rv-label, .rv-column-head, .rv-card-meta, .rv-agent-head { font: 10px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.rv-label, .rv-card-meta, .rv-agent-head small { color: var(--bone-dim); }
+.rv-highlight p { margin: 8px 0 0; color: var(--bone); font-size: 13px; line-height: 1.45; }
+.rv-intro { max-width: 82ch; margin: 24px 0; color: var(--bone-dim); font-size: 13px; line-height: 1.5; }
+.rv-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.rv-column { min-width: 0; border: 1px solid var(--bone-faint); background: var(--ink); }
+.rv-column-head { padding: 12px; border-bottom: 1px solid var(--bone-faint); color: var(--bone); background: var(--ink-lift); }
+.rv-card { margin: 10px; padding: 11px; border: 1px solid var(--bone-faint); background: var(--ink-lift); }
+.rv-card.is-pull { border-left: 3px solid var(--beam); }
+.rv-card.is-push { border-left: 3px solid var(--alert); }
+.rv-card-meta { display: flex; justify-content: space-between; gap: 8px; line-height: 1.35; }
+.rv-card-meta span:last-child { text-align: right; }
+.rv-card blockquote, .rv-note { margin: 9px 0 0; color: var(--bone); font-size: 13px; line-height: 1.45; }
+.rv-evidence { margin: 8px 0 0; color: var(--bone-dim); font-size: 11px; line-height: 1.4; }
+.rv-agent { padding-top: 4px; border-top: 1px solid var(--bone-faint); }
+.rv-agent:first-of-type { border-top: 0; }
+.rv-agent-head { display: flex; justify-content: space-between; gap: 8px; padding: 12px 12px 2px; color: var(--bone); }
+.rv-empty { padding: 12px; color: var(--bone-dim); font-size: 13px; }
+@media (max-width: 760px) { .rv-head { padding: 16px; } .rv-scroll { padding: 20px 16px 36px; } .rv-highlights, .rv-columns { grid-template-columns: 1fr; } }

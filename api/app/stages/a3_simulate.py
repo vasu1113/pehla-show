@@ -113,7 +113,11 @@ def simulate_population(
                     * config.PATIENCE_SCALE
                 )
 
-                if patience <= 0.0:
+                if (
+                    beat.index >= config.MIN_BEATS_BEFORE_WALKOUT
+                    and delta.delta < 0
+                    and patience <= config.WALKOUT_THRESHOLD
+                ):
                     patience = 0.0
                     left_at_sec = beat.start_sec
                     left_at_beat = beat.id

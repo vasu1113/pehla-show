@@ -29,7 +29,8 @@ CORS_ORIGINS = tuple(
     origin.strip()
     for origin in os.getenv(
         "CORS_ORIGINS",
-        "http://localhost:5173,http://localhost:5177",
+        "http://localhost:5173,http://127.0.0.1:5173,"
+        "http://localhost:5177,http://127.0.0.1:5177",
     ).split(",")
     if origin.strip()
 )
@@ -74,6 +75,13 @@ SENSITIVITY_JITTER = float(os.getenv("SENSITIVITY_JITTER", "0.15"))
 # real scores land, because correlated drains bite harder than random ones.
 PATIENCE_SCALE = float(os.getenv("PATIENCE_SCALE", "0.15"))
 
+# Let the opening establish a premise before anyone can leave. A listener then
+# leaves when their remaining patience crosses this floor, rather than only
+# after it reaches literal zero. These knobs are separate from PATIENCE_SCALE
+# so we can tune walkouts without distorting the score or persona preferences.
+MIN_BEATS_BEFORE_WALKOUT = int(os.getenv("MIN_BEATS_BEFORE_WALKOUT", "3"))
+WALKOUT_THRESHOLD = float(os.getenv("WALKOUT_THRESHOLD", "4.5"))
+
 MIN_WORDS = 200                 # below this, /analyse returns 400
 MAX_WORDS = 8000                # above this, /analyse returns 413
 
@@ -86,4 +94,4 @@ CONTRACT_VERSION = "1.0"
 PIPELINE_VERSION = os.getenv("PIPELINE_VERSION", "1")
 PARSER_VERSION = os.getenv("PARSER_VERSION", "1")
 SCORER_VERSION = os.getenv("SCORER_VERSION", "persona-pass-v1")
-SIMULATION_VERSION = os.getenv("SIMULATION_VERSION", "patience-v1")
+SIMULATION_VERSION = os.getenv("SIMULATION_VERSION", "patience-v2")

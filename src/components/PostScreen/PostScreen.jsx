@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { AnalysisPanel } from '../../analysis/AnalysisPanel';
 import { EvidencePanel } from '../Evidence/EvidencePanel';
 import { NotesPanel } from '../Notes/NotesPanel';
+import { RoomVoices } from '../RoomVoices/RoomVoices';
 import { ScriptPane } from '../ScriptPane';
 import './PostScreen.css';
 
 const TABS = [
   ['analysis', 'Chart'],
+  ['voices', 'Voices'],
   ['evidence', 'Evidence'],
   ['notes', 'Notes'],
   ['script', 'Script'],
@@ -23,6 +25,7 @@ export function PostScreen() {
           ))}
         </div>
         {tab === 'analysis' && <AnalysisPanel />}
+        {tab === 'voices' && <RoomVoices />}
         {tab === 'evidence' && <EvidencePanel />}
         {tab === 'notes' && <NotesPanel />}
         {tab === 'script' && <ScriptPane />}

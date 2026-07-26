@@ -7,8 +7,10 @@ from app.models import (
     AudienceMember,
     Beat,
     BeatType,
+    Calibration,
     Persona,
 )
+from app import config
 from app.stages.a0_cast import spawn_audience
 from app.stages.a3_simulate import build_reactions, simulate_population
 from app.stages.a4_cliffs import detect_cliffs
@@ -149,6 +151,107 @@ def test_exit_metadata_is_never_half_populated() -> None:
         for member in leavers
     )
     assert all(member.left_at_sec is None or member.left_at_sec >= 0 for member in leavers)
+
+
+def test_listener_leaves_at_the_walkout_threshold_before_patience_is_zero(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(config, "MIN_BEATS_BEFORE_WALKOUT", 0)
+    monkeypatch.setattr(config, "WALKOUT_THRESHOLD", 1.6)
+    persona = Persona(id="commuter", label="Commuter", prompt="Synthetic")
+    audience = simulate_population(
+        {
+            "commuter": [
+                AttentionDelta(
+                    beat_id=0,
+                    delta=-3,
+                    reason_code="PACING_FLAT",
+                    evidence="The scene stalls.",
+                )
+            ]
+        },
+        [
+            (
+                persona,
+                Calibration(
+                    variant_index=0,
+                    start_patience=2.0,
+                    sensitivity={"PACING_FLAT": 1.0},
+                    replenish={},
+                ),
+            )
+        ],
+        _beats()[:1],
+    )
+
+    assert audience[0].left_at_beat == 0
+    assert audience[0].patience_trace == [2.0, 0.0]
+
+
+def test_opening_grace_prevents_an_immediate_walkout(monkeypatch) -> None:
+    monkeypatch.setattr(config, "MIN_BEATS_BEFORE_WALKOUT", 3)
+    monkeypatch.setattr(config, "WALKOUT_THRESHOLD", 2.0)
+    persona = Persona(id="commuter", label="Commuter", prompt="Synthetic")
+    audience = simulate_population(
+        {
+            "commuter": [
+                AttentionDelta(
+                    beat_id=0,
+                    delta=-3,
+                    reason_code="PACING_FLAT",
+                    evidence="The scene stalls.",
+                )
+            ]
+        },
+        [
+            (
+                persona,
+                Calibration(
+                    variant_index=0,
+                    start_patience=2.0,
+                    sensitivity={"PACING_FLAT": 1.0},
+                    replenish={},
+                ),
+            )
+        ],
+        _beats()[:1],
+    )
+
+    assert audience[0].left_at_beat is None
+    assert audience[0].patience_trace == [2.0, 1.55]
+
+
+def test_refill_never_triggers_a_walkout_even_below_the_threshold(monkeypatch) -> None:
+    monkeypatch.setattr(config, "MIN_BEATS_BEFORE_WALKOUT", 0)
+    monkeypatch.setattr(config, "WALKOUT_THRESHOLD", 3.0)
+    persona = Persona(id="commuter", label="Commuter", prompt="Synthetic")
+    audience = simulate_population(
+        {
+            "commuter": [
+                AttentionDelta(
+                    beat_id=0,
+                    delta=1,
+                    reason_code="QUESTION_OPENED",
+                    evidence="A question lands.",
+                )
+            ]
+        },
+        [
+            (
+                persona,
+                Calibration(
+                    variant_index=0,
+                    start_patience=2.0,
+                    sensitivity={},
+                    replenish={"QUESTION_OPENED": 1.0},
+                ),
+            )
+        ],
+        _beats()[:1],
+    )
+
+    assert audience[0].left_at_beat is None
+    assert audience[0].patience_trace == [2.0, 2.15]
 
 
 def _leaver(

@@ -20,7 +20,12 @@ def build_system() -> str:
     return SYSTEM
 
 
-def build_prompt(notes_digest: str, drops_digest: str, seats_lost: int) -> str:
+def build_prompt(
+    notes_digest: str,
+    drops_digest: str,
+    audience_digest: str,
+    seats_lost: int,
+) -> str:
     return f"""\
 WHAT THE ROOM SAID
 
@@ -32,6 +37,11 @@ WHERE THE ROOM EMPTIED
 {drops_digest}
 
 {seats_lost} of 30 listeners left.
+
+────────────────────────────────────────────────────────────────────────
+WHAT THE AUDIENCE SAID
+
+{audience_digest}
 
 ────────────────────────────────────────────────────────────────────────
 SUMMARISE
@@ -52,4 +62,18 @@ chunk, or add one line. Name the chunk. Not a rewrite, not a list, not a \
 direction — one sentence naming one concrete edit.
 
 **Seats saved.** How many of the {seats_lost} lost listeners you would expect \
-that one change to keep. Be honest; a small number is a fine answer."""
+that one change to keep. Be honest; a small number is a fine answer.
+
+**Audience readout.** One plain sentence that says what the audience was
+drawn to, questioned, or resisted. This is required even when nobody left.
+
+**Critic readout.** One plain sentence naming the most useful critical tension
+in the notes. This is required even when the audience retained well.
+
+**Creator value.** One sentence explaining the decision this run makes easier
+for a creator, grounded in the audience and critic evidence above. Do not make
+generic product-marketing claims.
+
+**Why run it again.** One sentence explaining what the creator should compare
+after their next cut or draft. Ground it in this run's evidence, not a promise
+of certainty."""

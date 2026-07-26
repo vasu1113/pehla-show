@@ -7,6 +7,7 @@ from app.llm import LLM, gather_structured, get_llm
 from app.models import (
     NOTE_TYPES_BY_AGENT,
     AgentId,
+    AudienceReaction,
     Beat,
     DropEvent,
     Note,
@@ -97,6 +98,24 @@ def _drops_digest(drop_events: list[DropEvent]) -> str:
     )
 
 
+def _audience_digest(reactions: list[AudienceReaction]) -> str:
+    """Compact audience evidence, while the UI keeps every raw reaction."""
+    by_beat: dict[int, list[AudienceReaction]] = {}
+    for reaction in reactions:
+        by_beat.setdefault(reaction.beat_id, []).append(reaction)
+
+    lines: list[str] = []
+    for beat_id, items in sorted(by_beat.items()):
+        positive = sum(1 for item in items if item.delta > 0)
+        negative = sum(1 for item in items if item.delta < 0)
+        examples = sorted(items, key=lambda item: (-abs(item.delta), item.cohort))[:2]
+        quotes = " | ".join(
+            f'{item.cohort}: "{item.text}"' for item in examples
+        )
+        lines.append(f"[beat {beat_id}] +{positive} / -{negative} — {quotes}")
+    return "\n".join(lines) or "No audience reactions were available."
+
+
 async def run_expert(
     agent_id: AgentId,
     raw_text: str,
@@ -104,6 +123,7 @@ async def run_expert(
     drop_events: list[DropEvent],
     llm: LLM | None = None,
     id_offset: int = 0,
+    audience_reactions: list[AudienceReaction] | None = None,
 ) -> list[Note]:
     active_llm = get_llm() if llm is None else llm
     response = await active_llm.structured(
@@ -112,6 +132,7 @@ async def run_expert(
             raw_text,
             beats_digest(beats),
             _drops_digest(drop_events),
+            _audience_digest(audience_reactions or []),
         ),
         schema=ExpertNoteDraftList,
         model=config.MODEL_EXPERT,
@@ -237,11 +258,19 @@ async def convene_room(
     beats: list[Beat],
     drop_events: list[DropEvent],
     llm: LLM | None = None,
+    audience_reactions: list[AudienceReaction] | None = None,
 ) -> tuple[list[Note], list[Warning]]:
     try:
         active_llm = get_llm() if llm is None else llm
         results = await gather_structured(
-            run_expert(agent_id, raw_text, beats, drop_events, active_llm)
+            run_expert(
+                agent_id,
+                raw_text,
+                beats,
+                drop_events,
+                active_llm,
+                audience_reactions=audience_reactions,
+            )
             for agent_id in AGENT_IDS
         )
     except Exception:

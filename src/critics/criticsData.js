@@ -22,15 +22,31 @@ export const CRITICS = [
 ];
 
 export function buildCriticSchedule(timed, notes = []) {
-  return notes.flatMap((note, index) => {
+  const total = timed.at(-1)?.end ?? 0;
+  const candidates = notes.flatMap((note, index) => {
     const chunk = timed.find((item) => item.beatId === note.beat_id);
     if (!chunk || !note.text || !CRITICS.some((critic) => critic.id === note.agent_id)) return [];
-    const start = chunk.start + Math.min(0.5, Math.max(0.12, chunk.duration * (0.16 + (index % 3) * 0.12)));
-    const end = Math.min(chunk.end - 0.02, start + 3.6);
-    return end > start + 0.35
-      ? [{ id: note.id, criticId: note.agent_id, text: note.text, start, end }]
-      : [];
+    return [{
+      id: note.id,
+      criticId: note.agent_id,
+      text: note.text,
+      desiredStart: chunk.start + Math.min(0.5, Math.max(0.12, chunk.duration * (0.16 + (index % 3) * 0.12))),
+    }];
   });
+
+  // The balcony has one audible voice at a time. Notes can agree on the same
+  // beat, but rendering them at the same instant hid all but the first one.
+  // Keep their beat anchor, then let the panel respond in a readable sequence.
+  let availableAt = 0;
+  return candidates
+    .sort((left, right) => left.desiredStart - right.desiredStart)
+    .flatMap((note) => {
+      const start = Math.max(note.desiredStart, availableAt + 0.12);
+      const end = Math.min(total - 0.02, start + 2.8);
+      if (end <= start + 0.35) return [];
+      availableAt = end;
+      return [{ id: note.id, criticId: note.criticId, text: note.text, start, end }];
+    });
 }
 
 /** The entire room gets one speaker at a time. Pure function of the clock. */

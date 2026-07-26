@@ -109,6 +109,7 @@ def build_prompt(
     raw_text: str,
     beats_digest: str,
     drops_digest: str,
+    audience_digest: str,
 ) -> str:
     lens = LENSES[agent_id]
     allowed = NOTE_TYPES_BY_AGENT[agent_id]
@@ -140,9 +141,20 @@ gave and the phrase they gave it about.
 {drops_digest}
 
 ────────────────────────────────────────────────────────────────────────
+WHAT THE AUDIENCE SAID WHILE WATCHING
+
+The audience can be engaged and a critic can still identify a craft issue.
+The lines below show positive and negative response counts, with verbatim
+examples. Do not invent a reaction that is not present here.
+
+{audience_digest}
+
+────────────────────────────────────────────────────────────────────────
 FILE YOUR NOTES
 
-Write three to five notes. For each one:
+Write three to five notes. This is required even when nobody left. High
+retention means the draft held attention; it does not mean your lens has no
+useful critical observation. For each one:
 
 - name the chunk it is about (`beat_id`). Prefer chunks where people actually \
 left — those are the ones the room needs explained. A note about a chunk \
@@ -156,8 +168,8 @@ nobody reacted to needs to earn its place.
 Hold these in mind:
 
 - You are explaining observed behaviour, not free-associating about the draft. \
-If five listeners left at chunk 9, the useful note says why chunk 9 lost them \
-through your particular lens.
+When listeners stayed, identify the craft question that remains despite their \
+engagement; when they left, explain the departure through your particular lens.
 - Argue from your lens, not from consensus. If another discipline would reach \
 the opposite conclusion about a chunk, that is expected and you should still \
 say what you see. Do not hedge toward the middle.

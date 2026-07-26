@@ -363,6 +363,7 @@ async def analyse(
             beats,
             drops,
             llm,
+            audience_reactions=reactions,
         )
     except Exception:
         notes = []
@@ -381,7 +382,8 @@ async def analyse(
             notes,
             drops,
             summary.seats_total - summary.seats_retained,
-            llm,
+            llm=llm,
+            audience_reactions=reactions,
         )
         if synthesis is None:
             warnings.append(

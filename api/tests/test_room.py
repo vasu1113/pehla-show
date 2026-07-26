@@ -8,6 +8,7 @@ from app.fakes import FakeLLM
 from app.llm import LLMError
 from app.models import (
     AgentId,
+    AudienceReaction,
     Beat,
     BeatType,
     DropEvent,
@@ -254,7 +255,11 @@ def _note(beat_id: int = 1) -> Note:
 
 
 class _SynthesisLLM(FakeLLM):
+    def __init__(self) -> None:
+        self.prompts: list[str] = []
+
     async def structured(self, *, prompt, schema, model, system=None):
+        self.prompts.append(prompt)
         return schema.model_validate(
             {
                 "consensus": [
@@ -291,6 +296,33 @@ def test_synthesise_room_drops_entries_for_unknown_beats() -> None:
     assert result is not None
     assert [item.beat_id for item in result.consensus] == [1]
     assert [item.beat_id for item in result.conflict] == [1]
+
+
+def test_synthesis_includes_audience_evidence_even_without_walkouts() -> None:
+    llm = _SynthesisLLM()
+    reaction = AudienceReaction(
+        cohort="commuter",
+        beat_id=1,
+        timestamp=4,
+        delta=2,
+        reason_code="QUESTION_OPENED",
+        evidence="A door opens.",
+        text="Now I want to know who is there.",
+    )
+
+    result = _run(
+        synthesise_room(
+            [_note()],
+            [],
+            0,
+            llm,
+            audience_reactions=[reaction],
+        )
+    )
+
+    assert result is not None
+    assert "0 of 30 listeners left" in llm.prompts[0]
+    assert 'commuter: "Now I want to know who is there."' in llm.prompts[0]
 
 
 class _FailingSynthesisLLM(FakeLLM):

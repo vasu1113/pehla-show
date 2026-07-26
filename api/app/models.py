@@ -326,6 +326,12 @@ class RoomSynthesis(BaseModel):
     conflict: list[Conflict] = Field(default_factory=list)
     recommended_fix: str
     predicted_seats_saved: int
+    #: Creator-readable routes through the underlying reactions and notes.
+    #: Defaults keep historical runs readable after this contract addition.
+    audience_readout: str = ""
+    critic_readout: str = ""
+    creator_value: str = ""
+    return_reason: str = ""
 
 
 # ══════════════════════════════════════════════════════════════════════════

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from app import config
 from app.llm import LLM, get_llm
-from app.models import DropEvent, Note, RoomSynthesis
+from app.models import AudienceReaction, DropEvent, Note, RoomSynthesis
 from app.prompts import synthesis
 
 
@@ -27,11 +27,29 @@ def _drops_digest(drop_events: list[DropEvent]) -> str:
     )
 
 
+def _audience_digest(reactions: list[AudienceReaction]) -> str:
+    by_beat: dict[int, list[AudienceReaction]] = {}
+    for reaction in reactions:
+        by_beat.setdefault(reaction.beat_id, []).append(reaction)
+
+    lines: list[str] = []
+    for beat_id, items in sorted(by_beat.items()):
+        positive = sum(1 for item in items if item.delta > 0)
+        negative = sum(1 for item in items if item.delta < 0)
+        examples = sorted(items, key=lambda item: (-abs(item.delta), item.cohort))[:2]
+        quotes = " | ".join(
+            f'{item.cohort}: "{item.text}"' for item in examples
+        )
+        lines.append(f"[beat {beat_id}] +{positive} / -{negative} — {quotes}")
+    return "\n".join(lines) or "No audience reactions were available."
+
+
 async def synthesise_room(
     notes: list[Note],
     drop_events: list[DropEvent],
     seats_lost: int,
     llm: LLM | None = None,
+    audience_reactions: list[AudienceReaction] | None = None,
 ) -> RoomSynthesis | None:
     try:
         active_llm = get_llm() if llm is None else llm
@@ -39,6 +57,7 @@ async def synthesise_room(
             prompt=synthesis.build_prompt(
                 _notes_digest(notes),
                 _drops_digest(drop_events),
+                _audience_digest(audience_reactions or []),
                 seats_lost,
             ),
             schema=RoomSynthesis,

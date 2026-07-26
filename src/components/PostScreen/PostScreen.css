@@ -3,5 +3,5 @@
 .post-tabs { display: flex; gap: 4px; padding: 10px 14px; border-bottom: 1px solid var(--bone-faint); background: var(--ink-lift); }
 .post-tabs button { flex: 0 0 auto; border: 1px solid transparent; background: transparent; color: var(--bone-dim); padding: 9px 14px; font: 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
 .post-tabs button.is-active { border-bottom-color: var(--bone); color: var(--bone); }
-.post-panel > .analysis-panel, .post-panel > .evidence-panel, .post-panel > .notes-panel, .post-panel > .script-pane { flex: 1; min-height: 0; }
+.post-panel > .analysis-panel, .post-panel > .evidence-panel, .post-panel > .notes-panel, .post-panel > .script-pane, .post-panel > .room-voices { flex: 1; min-height: 0; }
 @media (max-width: 760px) { .post-screen { padding: 0; } .post-panel { min-height: 100vh; border: 0; } .post-tabs { overflow-x: auto; } }

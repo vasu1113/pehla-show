@@ -150,6 +150,10 @@
  * @property {{beat_id:number, position_a:{agents:string[],claim:string}, position_b:{agents:string[],claim:string}}[]} conflict
  * @property {string} recommended_fix
  * @property {number} predicted_seats_saved
+ * @property {string} audience_readout
+ * @property {string} critic_readout
+ * @property {string} creator_value
+ * @property {string} return_reason
  */
 
 /**
